@@ -35,4 +35,27 @@ subtest "Test to get_similarity() with the null sets" => sub {
     }
 };
 
+subtest "Test to get_similarity()" => sub {
+    my $jacc =  Algorithm::SetSimilarity::Jaccard->new();
+    {
+        my @set1 = ("there");
+        my @set2 = ("there");
+        my $score = $jacc->get_similarity(\@set1, \@set2);
+        is ($score, 1, "Make check of get_similarity() with one element")
+    }
+    {
+        my @set1 = ("there", "is");
+        my @set2 = ("there", "is");
+        my $score = $jacc->get_similarity(\@set1, \@set2);
+        is ($score, 1, "Make check of get_similarity() with sorted two elements")
+    }
+    {
+        my @set1 = ("is", "there");
+        my @set2 = ("there", "is");
+        my $score = $jacc->get_similarity(\@set1, \@set2);
+        is ($score, 1, "Make check of get_similarity() with unsorted two elements")
+    }
+
+};
+
 done_testing;
