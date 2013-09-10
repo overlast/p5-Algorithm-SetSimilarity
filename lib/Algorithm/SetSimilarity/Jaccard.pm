@@ -26,7 +26,6 @@ sub get_similarity {
         my ($min_att, $max_att) = ($#$set1, $#$set2);
         ($min_att, $max_att) = ($#$set2, $#$set1) if ($min_att > $max_att);
 
-        my ($att1, $att2) = (0, 0);
         my $match_num = 0;
 
         for (my ($att1, $att2) = (0, 0); ($att1 <= $min_att) && ($att2 <= $min_att);) {
@@ -43,6 +42,33 @@ sub get_similarity {
 
         my $diff_num = ($max_att + 1 - $match_num) + ($min_att + 1 - $match_num);
         $score = $match_num / ($match_num + $diff_num);
+    }
+    return $score;
+}
+
+sub _swap_set_ascending_order {
+    my ($self, $set1, $set2) = @_;
+    if ($#$set1 > $#$set2) {
+        my $tmp_ref = $set1;
+        $set1 = $set2;
+        $set2 = $tmp_ref;
+    }
+    return wantarray ? ($set1, $set2) : [$set1, $set2];
+}
+
+sub filt {
+    my ($self, $set1, $set2, $threshold) = @_;
+    my $score = -1.0;
+    if ((ref $set1 eq "ARRAY") && (ref $set2 eq "ARRAY") &&
+            (@$set1) && (@$set2) &&
+                ($threshold >= 0.0) && ($threshold <= 1.0)) {
+        for(my $r = 0; $r <= 0; $r++) {
+            last unless (((($#$set1 + 1) * $threshold) < $#$set2) && ((($#$set2 + 1) * $threshold) < $#$set1));
+
+            my $alpha = 0;
+            for (my $i = 0; $i <= $alpha; $i++) {
+            }
+        }
     }
     return $score;
 }
