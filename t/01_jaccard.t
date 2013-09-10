@@ -24,14 +24,14 @@ subtest "Test to get_similarity() with the null sets" => sub {
         my @set1 = ("there");
         my @set2 = ();
         my $score = $jacc->get_similarity(\@set1, \@set2);
-        is ($score, -1.0, "Make check of get_similarity() with two null sets")
+        is ($score, -1.0, "Make check of get_similarity() with one null set")
     }
 
     {
         my @set1 = ();
         my @set2 = ("there");
         my $score = $jacc->get_similarity(\@set1, \@set2);
-        is ($score, -1.0, "Make check of get_similarity() with two null sets")
+        is ($score, -1.0, "Make check of get_similarity() with one null set")
     }
 };
 
