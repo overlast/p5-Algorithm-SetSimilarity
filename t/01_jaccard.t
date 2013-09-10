@@ -75,4 +75,22 @@ subtest "Test to get_similarity()" => sub {
     }
 };
 
+subtest "Test to _swap_set_ascending_order()" => sub {
+    my $jacc =  Algorithm::SetSimilarity::Jaccard->new();
+    {
+        my $set1 = ["there", "is", "a", "element"];
+        my $set2 = ["there"];
+        my $ans = ["there", "is", "a", "element"];
+        ($set1, $set2) = $jacc->_swap_set_ascending_order($set1, $set2);
+        is_deeply ($set2, $ans, "Make check of _swap_set_ascending_order")
+    }
+    {
+        my $set1 = ["there"];
+        my $set2 = ["there", "is", "a", "element"];
+        my $ans = ["there", "is", "a", "element"];
+        ($set1, $set2) = $jacc->_swap_set_ascending_order($set1, $set2);
+        is_deeply ($set2, $ans, "Make check of _swap_set_ascending_order")
+    }
+};
+
 done_testing;
