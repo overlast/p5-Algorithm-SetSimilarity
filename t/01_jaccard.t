@@ -55,7 +55,24 @@ subtest "Test to get_similarity()" => sub {
         my $score = $jacc->get_similarity(\@set1, \@set2);
         is ($score, 1, "Make check of get_similarity() with unsorted two elements")
     }
-
+    {
+        my @set1 = ("Orange", "Strowberry", "Pear", "Grape");
+        my @set2 = ("Orange", "Strowberry", "Pear", "Peach");
+        my $score = $jacc->get_similarity(\@set1, \@set2);
+        is ($score, 0.6, "Make check of get_similarity() with unsorted two elements")
+    }
+    {
+        my @set1 = ("Orange", "Strowberry", "Pear", "Peach");
+        my @set2 = ("Orange", "Strowberry", "Pear", "Grape");
+        my $score = $jacc->get_similarity(\@set1, \@set2);
+        is ($score, 0.6, "Make check of get_similarity() with unsorted two elements")
+    }
+    {
+        my @set1 = ("Pear", "Peach", "Orange", "Strowberry");
+        my @set2 = ("Orange", "Strowberry", "Pear", "Grape");
+        my $score = $jacc->get_similarity(\@set1, \@set2);
+        is ($score, 0.6, "Make check of get_similarity() with unsorted two elements")
+    }
 };
 
 done_testing;
