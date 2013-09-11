@@ -4,14 +4,14 @@ use Test::More;
 
 use Algorithm::SetSimilarity::Jaccard;
 
-subtest "Test to initialize" => sub {
+subtest "Test of initializing" => sub {
     my $jacc =  Algorithm::SetSimilarity::Jaccard->new();
     subtest "with the default parameters" => sub {
         is ("Algorithm::SetSimilarity::Jaccard", ref $jacc, "Get Algorithm::SetSimilarity::Jaccard object");
     };
 };
 
-subtest "Test to get_similarity() with the null sets" => sub {
+subtest "Test of get_similarity() with the null sets" => sub {
     my $jacc =  Algorithm::SetSimilarity::Jaccard->new();
     {
         my @set1 = ();
@@ -35,7 +35,7 @@ subtest "Test to get_similarity() with the null sets" => sub {
     }
 };
 
-subtest "Test to get_similarity()" => sub {
+subtest "Test of get_similarity()" => sub {
     my $jacc =  Algorithm::SetSimilarity::Jaccard->new();
     {
         my @set1 = ("there");
@@ -75,21 +75,68 @@ subtest "Test to get_similarity()" => sub {
     }
 };
 
-subtest "Test to _swap_set_ascending_order()" => sub {
+subtest "Test of _swap_set_ascending_order()" => sub {
     my $jacc =  Algorithm::SetSimilarity::Jaccard->new();
     {
         my $set1 = ["there", "is", "a", "element"];
         my $set2 = ["there"];
         my $ans = ["there", "is", "a", "element"];
         ($set1, $set2) = $jacc->_swap_set_ascending_order($set1, $set2);
-        is_deeply ($set2, $ans, "Make check of _swap_set_ascending_order")
+        is_deeply ($set2, $ans, "Make check of _swap_set_ascending_order()")
     }
     {
         my $set1 = ["there"];
         my $set2 = ["there", "is", "a", "element"];
         my $ans = ["there", "is", "a", "element"];
         ($set1, $set2) = $jacc->_swap_set_ascending_order($set1, $set2);
-        is_deeply ($set2, $ans, "Make check of _swap_set_ascending_order")
+        is_deeply ($set2, $ans, "Make check of _swap_set_ascending_order()")
+    }
+};
+
+subtest "Test of filt_by_threshold()" => sub {
+    my $jacc =  Algorithm::SetSimilarity::Jaccard->new();
+        {
+        my @set1 = ("there");
+        my @set2 = ("there");
+        my $i = 0.0;
+        my $score = $jacc->filt_by_threshold(\@set1, \@set2, $i);
+        is ($score, -1.0, "Make check of filt_by_threshold() using $i as a threshold with one element");
+    }
+    {
+        my @set1 = ("there");
+        my @set2 = ("there");
+        for (my $i = 0.1; $i <= 1.0; $i += 0.1) {
+            my $score = $jacc->filt_by_threshold(\@set1, \@set2, $i);
+            is ($score, 1.0, "Make check of filt_by_threshold() using $i as a threshold with one element");
+        }
+    }
+    {
+        my @set1 = ("there", "is");
+        my @set2 = ("there", "is");
+        for (my $i = 0.1; $i <= 1.0; $i += 0.1) {
+            my $score = $jacc->filt_by_threshold(\@set1, \@set2, $i);
+            is ($score, 1.0, "Make check of filt_by_threshold() using $i as a threshold with sorted two elements");
+        }
+    }
+    {
+        my @set1 = ("there", "is");
+        my @set2 = ("is", "there");
+        for (my $i = 0.1; $i <= 1.0; $i += 0.1) {
+            my $score = $jacc->filt_by_threshold(\@set1, \@set2, $i);
+            is ($score, 1.0, "Make check of filt_by_threshold() using $i as a threshold with sorted two elements");
+        }
+    }
+    {
+        my @set1 = ("Orange", "Strowberry", "Pear", "Grape");
+        my @set2 = ("Orange", "Strowberry", "Pear", "Peach");
+        for (my $i = 0.1; $i <= 0.6; $i += 0.1) {
+            my $score = $jacc->filt_by_threshold(\@set1, \@set2, $i);
+            is ($score, 0.6, "Make check of filt_by_threshold() using $i as a threshold with unsorted four elements");
+        }
+        for (my $i = 0.7; $i <= 1.0; $i += 0.1) {
+            my $score = $jacc->filt_by_threshold(\@set1, \@set2, $i);
+            is ($score, -1.0, "Make check of filt_by_threshold() using $i as a threshold with unsorted four elements");
+        }
     }
 };
 
