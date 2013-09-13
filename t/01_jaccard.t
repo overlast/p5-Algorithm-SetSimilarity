@@ -73,6 +73,18 @@ subtest "Test of get_similarity()" => sub {
         my $score = $jacc->get_similarity(\@set1, \@set2);
         is ($score, 0.6, "Make check of get_similarity() with unsorted two elements")
     }
+    {
+        my @set1 = ("Orange", "Strowberry", "Pear", "Grape");
+        my @set2 = ("Orange", "Strowberry", "Pear", "Peach");
+        for (my $i = 0.1; $i <= 0.6; $i += 0.1) {
+            my $score = $jacc->get_similarity(\@set1, \@set2, $i);
+            is ($score, 0.6, "Make check of get_similarity() using $i as a threshold with unsorted four elements");
+        }
+        for (my $i = 0.7; $i <= 1.0; $i += 0.1) {
+            my $score = $jacc->get_similarity(\@set1, \@set2, $i);
+            is ($score, -1.0, "Make check of get_similarity() using $i as a threshold with unsorted four elements");
+        }
+    }
 };
 
 subtest "Test of _swap_set_ascending_order()" => sub {
