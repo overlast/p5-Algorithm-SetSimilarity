@@ -16,33 +16,40 @@ sub new {
 }
 
 sub get_similarity {
-    my ($self, $set1, $set2) = @_;
+    my ($self, $set1, $set2, $threshold) = @_;
     my $score = -1.0;
+
     if ((ref $set1 eq "ARRAY") && (ref $set2 eq "ARRAY") && (@$set1) && (@$set2)) {
-        unless ( $self->{is_sorted} ) {
-            @{$set1} = sort {$a cmp $b} @$set1;
-            @{$set2} = sort {$a cmp $b} @$set2;
+        if ((defined $threshold) && ($threshold > 0.0)) {
+            $score = $self->filt_by_threshold($set1, $set2, $threshold);
         }
-        my ($min_att, $max_att) = ($#$set1, $#$set2);
-        ($min_att, $max_att) = ($#$set2, $#$set1) if ($min_att > $max_att);
-
-        my $match_num = 0;
-
-        for (my ($att1, $att2) = (0, 0); ($att1 <= $min_att) && ($att2 <= $min_att);) {
-            if (($set1->[$att1] cmp $set2->[$att2]) == -1) {
-                $att1++;
-            } elsif (($set1->[$att1] cmp $set2->[$att2]) == 1) {
-                $att2++;
-            } else {
-                $match_num++;
-                $att1++;
-                $att2++;
+        else{
+            unless ( $self->{is_sorted} ) {
+                @{$set1} = sort {$a cmp $b} @$set1;
+                @{$set2} = sort {$a cmp $b} @$set2;
             }
-        }
+            my ($min_att, $max_att) = ($#$set1, $#$set2);
+            ($min_att, $max_att) = ($#$set2, $#$set1) if ($min_att > $max_att);
 
-        my $diff_num = ($max_att + 1 - $match_num) + ($min_att + 1 - $match_num);
-        $score = $match_num / ($match_num + $diff_num);
+            my $match_num = 0;
+
+            for (my ($att1, $att2) = (0, 0); ($att1 <= $min_att) && ($att2 <= $min_att);) {
+                if (($set1->[$att1] cmp $set2->[$att2]) == -1) {
+                    $att1++;
+                } elsif (($set1->[$att1] cmp $set2->[$att2]) == 1) {
+                    $att2++;
+                } else {
+                    $match_num++;
+                    $att1++;
+                $att2++;
+                }
+            }
+
+            my $diff_num = ($max_att + 1 - $match_num) + ($min_att + 1 - $match_num);
+            $score = $match_num / ($match_num + $diff_num);
+        }
     }
+
     return $score;
 }
 
@@ -55,7 +62,17 @@ sub _swap_set_ascending_order {
     }
     return wantarray ? ($set1, $set2) : [$set1, $set2];
 }
-use YAML;
+
+ sub _swap_set_descending_order {
+     my ($self, $set1, $set2) = @_;
+     if ($#$set1 < $#$set2) {
+         my $tmp_ref = $set1;
+         $set1 = $set2;
+         $set2 = $tmp_ref;
+     }
+     return wantarray ? ($set1, $set2) : [$set1, $set2];
+ }
+
 sub filt_by_threshold {
     my ($self, $set1, $set2, $threshold) = @_;
     my $score = -1.0;
