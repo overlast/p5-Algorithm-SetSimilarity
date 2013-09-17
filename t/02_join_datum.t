@@ -66,4 +66,32 @@ subtest "Test of get_num()" => sub {
     }
 };
 
+subtest "Test of push_multi()" => sub {
+    my $datum =  Algorithm::SetSimilarity::Join::Datum->new();
+    subtest "with two sets" => sub {
+        my @set = (
+            ["This", "is", "a", "set1"],
+            ["This", "is", "a", "set2"],
+        );
+        my $is_pushed = $datum->push_multi(\@set);
+        is($is_pushed, 2, "push one set");
+    };
+        subtest "with two sets" => sub {
+        my @set = (
+            ["This", "is", "a", "set1"],
+            ["This", "is", "a", "set2"],
+            ["This", "is", "a", "set3"],
+            ["This", "is", "a", "set4"],
+            ["This", "is", "a", "set5"],
+            ["This", "is", "a", "set6"],
+            ["This", "is", "a", "set7"],
+            ["This", "is", "a", "set8"],
+            ["This", "is", "a", "set9"],
+            ["This", "is", "a", "set10"],
+        );
+        my $is_pushed = $datum->push_multi(\@set);
+        is($is_pushed, 10, "push one set");
+    };
+};
+
 done_testing;
