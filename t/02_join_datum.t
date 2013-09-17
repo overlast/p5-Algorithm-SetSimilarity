@@ -11,6 +11,25 @@ subtest "Test of initializing" => sub {
     };
 };
 
+subtest "Test of push()" => sub {
+    my $datum =  Algorithm::SetSimilarity::Join::Datum->new();
+    subtest "with one set" => sub {
+        my @set = ("This", "is", "a", "set");
+        my $is_pushed = $datum->push(\@set);
+        is($is_pushed, 1, "push one set");
+    };
+    subtest "with a null set" => sub {
+        my @set = ();
+        my $is_pushed = $datum->push(\@set);
+        is($is_pushed, 0, "push a null set");
+    };
+    subtest "with a reference to one set" => sub {
+        my @set = (["This", "is", "a", "set"]);
+        my $is_pushed = $datum->push(\@set);
+        is($is_pushed, 0, "push a reference to one set");
+    };
+};
+
 subtest "Test of get_num()" => sub {
     my $datum =  Algorithm::SetSimilarity::Join::Datum->new();
     subtest "with a just initialized object" => sub {
