@@ -100,7 +100,8 @@ subtest "Test of get()" => sub {
         my @set = ("This", "is", "a", "set");
         my $is_pushed = $datum->push(\@set);
         my $get_result = $datum->get(0);
-        is_deeply($get_result, \@set, "get the pushed set and compare with original set");
+        my @res = ("This", "a", "is", "set");
+        is_deeply($get_result, \@res, "get the pushed set and compare with original set");
     };
 };
 
@@ -112,7 +113,8 @@ subtest "Test of update()" => sub {
         my @set1 = ("This", "is", "a", "set1");
         my $is_pushed = $datum->push(\@set1);
         my $get_result1 = $datum->get($id);
-        is_deeply($get_result1, \@set1, "get the pushed set and compare with original set1");
+        my @res1 = ("This", "a", "is", "set1");
+        is_deeply($get_result1, \@res1, "get the pushed set and compare with original set1");
     };
 
     subtest "with a unpushable set" => sub {
@@ -126,9 +128,9 @@ subtest "Test of update()" => sub {
         my @set2 = ("This", "is", "a", "set2");
         my $is_updated = $datum->update($id, \@set2);
         is($is_updated, 1, "update a row using new set");
-
+        my @res2 = ("This", "a", "is", "set2");
         my $get_result2 = $datum->get($id);
-        is_deeply($get_result2, \@set2, "update the pushed set and compare with original set2");
+        is_deeply($get_result2, \@res2, "update the pushed set and compare with original set2");
     };
 };
 
@@ -148,8 +150,9 @@ subtest "Test of update_multi()" => sub {
         my @set = ("This", "is", "a", "set4");
         my $is_update_row = $datum->update($id, \@set);
         is($is_update_row, 1, "update a row using a set");
+        my @res = ("This", "a", "is", "set4");
         my $get_result_row = $datum->get($id);
-        is_deeply($get_result_row, \@set, "update the pushed sets and compare with new set");
+        is_deeply($get_result_row, \@res, "update the pushed sets and compare with new set");
 
 
         my %sets2 = (
@@ -160,8 +163,36 @@ subtest "Test of update_multi()" => sub {
         my $is_updated = $datum->update_multi(\%sets2);
         is($is_updated, 3, "update a set of three sets");
 
+        my @res2 = ("This", "a", "is", "set2");
         my $get_result = $datum->get($id);
-        is_deeply($get_result, $sets1[$id], "update the pushed sets and compare with original set");
+        is_deeply($get_result, \@res2, "update the pushed sets and compare with original set");
+    };
+};
+
+subtest "Test of sort()" => sub {
+    my $datum =  Algorithm::SetSimilarity::Join::Datum->new();
+    subtest "with two sets" => sub {
+        my @set1 = (
+            ["This",],
+            ["This", "is",],
+            ["This", "is", "a",],
+            ["This", "is", "a", "set",],
+        );
+
+        my @set2 = (
+            ["This", "a", "is", "set",],
+            ["This", "a", "is",],
+            ["This", "is",],
+            ["This",],
+        );
+
+        my $is_pushed = $datum->push_multi(\@set1);
+        is($is_pushed, 4, "push four sets");
+
+        my $is_sorted = $datum->sort();
+        is($is_sorted, 1, "execute the sorting process");
+
+        is_deeply(\@{$datum->{datum}}, \@set2, "sort the sets by the elements number of the each sets");
     };
 };
 

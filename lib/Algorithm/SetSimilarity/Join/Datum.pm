@@ -37,18 +37,32 @@
      if ((defined $sets) && (ref $sets eq "HASH")) {
          foreach my $key (keys $sets) {
              if ($key >= 0) {
-                 $is_update += $self->update($sets->{$key}, $key);
+                 $is_update += $self->update($key, $sets->{$key});
              }
          }
      }
      return $is_update;
  }
 
+ sub sort_set {
+     my ($self, $set) = @_;
+     my @array = ();
+     if ((defined $set) && (ref $set eq "ARRAY")) {
+         @array = @{$set};
+         if ($#$set > 0) {
+             @array = sort @{$set};
+         }
+     }
+     return \@array;
+ }
+
  sub update {
-     my ($self, $set, $id) = @_;
+     my ($self, $id, $set) = @_;
      my $is_update = 0;
-     if (($self-->check_pushability($set)) && ($id < $self->get_num())) {
+     if (($self->check_pushability($set)) && ($id < ($self->get_num()))) {
+         $set = $self->sort_set($set);
          $self->{datum}->[$id] = $set;
+         $is_update = 1;
      }
      return $is_update;
  }
@@ -68,6 +82,7 @@
      my ($self, $set) = @_;
      my $is_push = 0;
      if ($self->check_pushability($set)) {
+         $set = $self->sort_set($set);
          push @{$self->{datum}}, $set;
          $is_push = 1;
      }
@@ -80,6 +95,17 @@
      $set = $self->{datum}->[$id] if (defined $self->{datum}->[$id]);
      return $set;
  }
+
+sub sort {
+    my ($self) = @_;
+    my $is_sort = 0;
+    if ($self->get_num() > 1) {
+        my @array = sort { $#$b <=> $#$a } @{$self->{datum}};
+        $self->{datum} = \@array;
+        $is_sort = 1;
+    }
+    return $is_sort;
+}
 
  1;
 
