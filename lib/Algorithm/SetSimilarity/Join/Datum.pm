@@ -74,6 +74,13 @@
      return $is_push;
  }
 
+ sub get {
+     my ($self, $id) = @_;
+     my $set = [];
+     $set = $self->{datum}->[$id] if (defined $self->{datum}->[$id]);
+     return $set;
+ }
+
  1;
 
  __END__
