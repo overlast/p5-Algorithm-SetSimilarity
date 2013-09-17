@@ -11,6 +11,25 @@ subtest "Test of initializing" => sub {
     };
 };
 
+subtest "Test of check_pushability()" => sub {
+    my $datum =  Algorithm::SetSimilarity::Join::Datum->new();
+    subtest "with a valid set" => sub {
+        my @set = ("This", "is", "a", "set");
+        my $is_pushable = $datum->check_pushability(\@set);
+        is($is_pushable, 1, "this is a pushable set");
+    };
+    subtest "with a invalid set whih have no data" => sub {
+        my @set = ();
+        my $is_pushable = $datum->check_pushability(\@set);
+        is($is_pushable, 0, "this is a unpushable set");
+    };
+    subtest "with a invalid set witch have a reference to a one set" => sub {
+        my @set = (["This", "is", "a", "set"]);
+        my $is_pushable = $datum->check_pushability(\@set);
+        is($is_pushable, 0, "this is a unpushable set");
+    };
+};
+
 subtest "Test of push()" => sub {
     my $datum =  Algorithm::SetSimilarity::Join::Datum->new();
     subtest "with one set" => sub {
