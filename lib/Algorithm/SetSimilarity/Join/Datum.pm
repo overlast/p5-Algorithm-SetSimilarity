@@ -20,21 +20,21 @@
  sub get_num {
      my ($self) = @_;
      my $num = 0;
-     $num = ($#{$self->{datum}} + 1) if (exists $self->{datum});
+     $num = ($#{$self->{datum}} + 1) if ((exists $self->{datum}) && ($self->check_pushability($self->{datum}->[0])));
      return $num;
  }
 
- sub chack_pushability {
+ sub check_pushability {
      my ($self, $set) = @_;
      my $is_pushable = 0;
-     $is_pushable = 1 if ((ref $set eq "ARRAY") && (defined $set->[0]) && (ref $set->[0] eq "SCALAR"));
+     $is_pushable = 1 if ((defined $set) && (ref $set eq "ARRAY") && (defined $set->[0]) && (ref $set->[0] eq ''));
      return $is_pushable;
  }
 
  sub update_multi {
      my ($self, $sets) = @_;
      my $is_update = 0;
-     if (ref $sets eq "HASH") {
+     if ((defined $sets) && (ref $sets eq "HASH")) {
          foreach my $key (keys $sets) {
              if ($key >= 0) {
                  $is_update += $self->update($sets->{$key}, $key);
@@ -47,7 +47,7 @@
  sub update {
      my ($self, $set, $id) = @_;
      my $is_update = 0;
-     if (($self-->chack_pushability($set)) && ($id < $self->get_num())) {
+     if (($self-->check_pushability($set)) && ($id < $self->get_num())) {
          $self->{datum}->[$id] = $set;
      }
      return $is_update;
@@ -56,7 +56,7 @@
  sub push_multi {
      my ($self, $sets) = @_;
      my $is_push = 0;
-     if (ref $sets eq "ARRAY") {
+     if ((defined $sets) && (ref $sets eq "ARRAY")) {
          foreach my $set (@{$sets}) {
              $is_push += $self->push($set);
          }
@@ -67,7 +67,7 @@
  sub push {
      my ($self, $set) = @_;
      my $is_push = 0;
-     if ($self->chack_pushability($set)) {
+     if ($self->check_pushability($set)) {
          push @{$self->{datum}}, $set;
          $is_push = 1;
      }
