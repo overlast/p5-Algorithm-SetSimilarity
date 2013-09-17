@@ -94,4 +94,14 @@ subtest "Test of push_multi()" => sub {
     };
 };
 
+subtest "Test of get()" => sub {
+    my $datum =  Algorithm::SetSimilarity::Join::Datum->new();
+    subtest "with one set" => sub {
+        my @set = ("This", "is", "a", "set");
+        my $is_pushed = $datum->push(\@set);
+        my $get_result = $datum->get(0);
+        is_deeply($get_result, \@set, "get the pushed set and compare with original set");
+    };
+};
+
 done_testing;
