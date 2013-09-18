@@ -2,7 +2,7 @@ package Algorithm::SetSimilarity::Jaccard;
 
 use 5.008005;
 use strict;
-use warnings;
+#use warnings;
 
 use YAML;
 
@@ -38,21 +38,25 @@ sub get_similarity {
             my $s2 = $#$set2 + 1;
 
             unless ( $self->{is_sorted} ) {
-                @{$set1} = sort {$a cmp $b} @$set1;
-                @{$set2} = sort {$a cmp $b} @$set2;
+                @{$set1} = sort {$a <=> $b || $a cmp $b} @$set1;
+                @{$set2} = sort {$a <=> $b || $a cmp $b} @$set2;
             }
 
             my $match_num = 0;
 
             for (my ($att1, $att2) = (0, 0); ($att1 < $s2) && ($att2 < $s2);) {
-                if (($set1->[$att1] cmp $set2->[$att2]) == -1) {
+                if (($set1->[$att1] <=> $set2->[$att2]) == -1) {
+                    $att1++;
+                } elsif (($set1->[$att1] <=> $set2->[$att2]) == 1) {
+                    $att2++;
+                } elsif (($set1->[$att1] cmp $set2->[$att2]) == -1) {
                     $att1++;
                 } elsif (($set1->[$att1] cmp $set2->[$att2]) == 1) {
                     $att2++;
                 } else {
                     $match_num++;
                     $att1++;
-                $att2++;
+                    $att2++;
                 }
             }
 
@@ -98,15 +102,20 @@ sub filt_by_threshold {
             last unless (($s1 * $threshold) <= $s2); #size filtering
 
             unless ( $self->{is_sorted} ) {
-                @{$set1} = sort {$a cmp $b} @$set1;
-                @{$set2} = sort {$a cmp $b} @$set2;
+                @{$set1} = sort { $a <=> $b || $a cmp $b} @$set1;
+                @{$set2} = sort { $a <=> $b || $a cmp $b} @$set2;
             }
-            my $min_overlap = ($threshold / (1 + $threshold)) * ($s1 + $s2);
-            my $alpha = int($s2 - $min_overlap) + 1;
+
+            my $min_overlap = int(($threshold / (1 + $threshold)) * ($s1 + $s2));
+            my $alpha = $s2 - ($min_overlap + 1) + 1;
             my $match_num = 0;
             my ($att1, $att2) = (0, 0);
             while (($att1 < $alpha) && ($att2 < $alpha)) {
-                if (($set1->[$att1] cmp $set2->[$att2]) == -1) {
+                if (($set1->[$att1] <=> $set2->[$att2]) == -1) {
+                    $att1++;
+                } elsif (($set1->[$att1] <=> $set2->[$att2]) == 1) {
+                    $att2++;
+                } elsif (($set1->[$att1] cmp $set2->[$att2]) == -1) {
                     $att1++;
                 } elsif (($set1->[$att1] cmp $set2->[$att2]) == 1) {
                     $att2++;
@@ -121,15 +130,20 @@ sub filt_by_threshold {
                     $match_num = 0;
                     last;
                 }
-                if ($match_num + ($s2 - $att2) < $min_overlap) {
-                    last;
-                }
             }
             last unless ($match_num >= 1);
             while (($att1 < $s1) && ($att2 < $s2)) {
-                if (($set1->[$att1] cmp $set2->[$att2]) == -1) {
+                if (($set1->[$att1] <=> $set2->[$att2]) == -1) {
+                    last if ($match_num + ($s1 - $att1) < $min_overlap);
+                    $att1++;
+                } elsif (($set1->[$att1] <=> $set2->[$att2]) == 1) {
+                    last if ($match_num + ($s2 - $att2) < $min_overlap);
+                    $att2++;
+                } elsif (($set1->[$att1] cmp $set2->[$att2]) == -1) {
+                    last if ($match_num + ($s1 - $att1) < $min_overlap);
                     $att1++;
                 } elsif (($set1->[$att1] cmp $set2->[$att2]) == 1) {
+                    last if ($match_num + ($s2 - $att2) < $min_overlap);
                     $att2++;
                 } else {
                     $match_num++;
@@ -137,9 +151,9 @@ sub filt_by_threshold {
                     $att2++;
                 }
             }
+            last unless ($match_num >= $min_overlap + 1);
             my $diff_num = ($s1 - $match_num) + ($s2 - $match_num);
             $score = $match_num / ($match_num + $diff_num);
-
         }
     }
     return $score;
