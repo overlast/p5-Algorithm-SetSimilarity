@@ -16,34 +16,47 @@ sub new {
 }
 
 sub check_joinable {
-    my ($self, $sets) = @_;
+    my ($self, $datum) = @_;
     my $is_joinable = 0;
-    $is_joinable = 1 if (ref $sets eq "Algorithm::SetSimilarity::Join::Datum");
+    $is_joinable = 1 if (ref $datum eq "Algorithm::SetSimilarity::Join::Datum");
     return $is_joinable;
 }
 
+# only Jaccard coefficient yet.
 sub join {
-    my ($self, $sets, $threshold) = @_;
+    my ($self, $datum, $threshold) = @_;
     my @result = ();
-    if ($self->check_joinable($sets)) {
-        $sets->sort() unless ((exists $self->{"is_sorted"}) && ($self->{"is_sorted"}));
-        for (my $p = 0; $p <= $#$sets; $p++) {
-            my $s1 = $#{$sets->[$p]} + 1;
-            my $maxpref = int ($s1 / $threshold);
-            for (my $c = $p + 1; $c <= $#$sets; $c++) {
-                my $s2 = $#{$sets->[$c]} + 1;
-                next if (($s1 * $threshold) > $s2); # minsize filtering
-                my $max_att = $maxpref; # adopt maxpref size
-                $max_att = $s2 if ($s2 < $max_att);
-                my $min_overlap = ($threshold / (1 + $threshold)) * ($s1 + $s2);
-                my $alpha = int($s1 - $min_overlap) + 1;
+    if ($self->check_joinable($datum)) {
+        $datum->sort() unless ((exists $self->{"is_sorted"}) && ($self->{"is_sorted"}));
+        my $set_num = $datum->get_num();
+        for (my $p = 0; $p < $set_num; $p++) {
+            my $p_set = $datum->get($p);
+            my $s1 = $#$p_set + 1;
 
+            # $datum is sorted. Therefore $max_att is needless.
+            #my $maxpref = int ($s1 / $threshold);
+            for (my $c = $p + 1; $c < $set_num; $c++) {
+                my $c_set = $datum->get($c);
+                my $s2 = $#$c_set + 1;
+                next if (($s1 * $threshold) > $s2); # minsize filtering
+
+                # $datum is sorted. Therefore $max_att is needless.
+                # my $max_att = $maxpref; # adopt maxpref size
+                # $max_att = $s2 if ($s2 < $max_att);
+
+                my $min_overlap = int(($threshold / (1 + $threshold)) * ($s1 + $s2));
+                my $alpha = $s2 - ($min_overlap + 1) + 1;
                 my $match_num = 0;
                 my ($att1, $att2) = (0, 0);
+
                 while (($att1 < $alpha) && ($att2 < $alpha)) {
-                    if (($sets->[$p] cmp $sets->[$c]) == -1) {
+                    if (($p_set->[$att1] <=> $c_set->[$att2]) == -1) {
                         $att1++;
-                    } elsif (($sets->[$p] cmp $sets->[$c]) == 1) {
+                    } elsif (($p_set->[$att1] <=> $c_set->[$att2]) == 1) {
+                        $att2++;
+                    } elsif (($p_set->[$att1] cmp $c_set->[$att2]) == -1) {
+                        $att1++;
+                    } elsif (($p_set->[$att1] cmp $c_set->[$att2]) == 1) {
                         $att2++;
                     } else {
                         $match_num++;
@@ -56,12 +69,31 @@ sub join {
                         $match_num = 0;
                         last;
                     }
-                    if ($match_num + ($s2 - $att2) < $min_overlap) {
-                        last;
+                }
+                next unless ($match_num >= 1);
+                while (($att1 < $s1) && ($att2 < $s2)) {
+                    if (($p_set->[$att1] <=> $c_set->[$att2]) == -1) {
+                        last if ($match_num + ($s1 - $att1) < $min_overlap);
+                        $att1++;
+                    } elsif (($p_set->[$att1] <=> $c_set->[$att2]) == 1) {
+                        last if ($match_num + ($s2 - $att2) < $min_overlap);
+                        $att2++;
+                    } elsif (($p_set->[$att1] cmp $c_set->[$att2]) == -1) {
+                        last if ($match_num + ($s1 - $att1) < $min_overlap);
+                        $att1++;
+                    } elsif (($p_set->[$att1] cmp $c_set->[$att2]) == 1) {
+                        last if ($match_num + ($s2 - $att2) < $min_overlap);
+                        $att2++;
+                    } else {
+                        $match_num++;
+                        $att1++;
+                        $att2++;
                     }
                 }
-                last unless ($match_num >= 1);
-                my @pair = ($p, $c);
+                last unless ($match_num >= $min_overlap + 1);
+                my $diff_num = ($s1 - $match_num) + ($s2 - $match_num);
+                my $score = $match_num / ($match_num + $diff_num);
+                my @pair = ($p, $c, $score);
                 push @result, \@pair;
             }
         }
