@@ -2,7 +2,7 @@
 
  use 5.008005;
  use strict;
- use warnings;
+# use warnings;
 
  use YAML;
 
@@ -50,7 +50,7 @@
      if ((defined $set) && (ref $set eq "ARRAY")) {
          @array = @{$set};
          if ($#$set > 0) {
-             @array = sort @{$set};
+             @array = sort { $a <=> $b || $a cmp $b } @{$set};
          }
      }
      return \@array;
