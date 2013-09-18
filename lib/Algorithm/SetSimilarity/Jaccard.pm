@@ -15,6 +15,15 @@ sub new {
     bless \%hash, $class;
 }
 
+sub get_sets {
+    my ($self, $sets, $threshold) = @_;
+    unless ( $self->{is_sorted} ) {
+        @{$sets} = sort {$#{$sets->[$b]} <=> $#{$sets->[$a]}} @$sets;
+    }
+    my @result_sets = Algorithm::SetSimilarity::Join::MPJoin->join($sets, $threshold);
+    return \@result_sets;
+}
+
 sub get_similarity {
     my ($self, $set1, $set2, $threshold) = @_;
     my $score = -1.0;
@@ -24,16 +33,18 @@ sub get_similarity {
             $score = $self->filt_by_threshold($set1, $set2, $threshold);
         }
         else{
+            ($set1, $set2) = $self->_swap_set_descending_order($set1, $set2);
+            my $s1 = $#$set1 + 1;
+            my $s2 = $#$set2 + 1;
+
             unless ( $self->{is_sorted} ) {
                 @{$set1} = sort {$a cmp $b} @$set1;
                 @{$set2} = sort {$a cmp $b} @$set2;
             }
-            my ($min_att, $max_att) = ($#$set1, $#$set2);
-            ($min_att, $max_att) = ($#$set2, $#$set1) if ($min_att > $max_att);
 
             my $match_num = 0;
 
-            for (my ($att1, $att2) = (0, 0); ($att1 <= $min_att) && ($att2 <= $min_att);) {
+            for (my ($att1, $att2) = (0, 0); ($att1 < $s2) && ($att2 < $s2);) {
                 if (($set1->[$att1] cmp $set2->[$att2]) == -1) {
                     $att1++;
                 } elsif (($set1->[$att1] cmp $set2->[$att2]) == 1) {
@@ -45,7 +56,7 @@ sub get_similarity {
                 }
             }
 
-            my $diff_num = ($max_att + 1 - $match_num) + ($min_att + 1 - $match_num);
+            my $diff_num = ($s1 - $match_num) + ($s2 - $match_num);
             $score = $match_num / ($match_num + $diff_num);
         }
     }
@@ -80,18 +91,18 @@ sub filt_by_threshold {
             (@$set1) && (@$set2) &&
                 ($threshold > 0.0) && ($threshold <= 1.0)) {
         for(my $r = 0; $r <= 0; $r++) {
-            ($set1, $set2) = $self->_swap_set_ascending_order($set1, $set2);
+            ($set1, $set2) = $self->_swap_set_descending_order($set1, $set2);
             my $s1 = $#$set1 + 1;
             my $s2 = $#$set2 + 1;
 
-            last unless (($s2 * $threshold) <= $s1); #size filtering
+            last unless (($s1 * $threshold) <= $s2); #size filtering
 
             unless ( $self->{is_sorted} ) {
                 @{$set1} = sort {$a cmp $b} @$set1;
                 @{$set2} = sort {$a cmp $b} @$set2;
             }
-
-            my $alpha = int($s1 - ($threshold / (1 + $threshold)) * ($s1 + $s2)) + 1;
+            my $min_overlap = ($threshold / (1 + $threshold)) * ($s1 + $s2);
+            my $alpha = int($s2 - $min_overlap) + 1;
             my $match_num = 0;
             my ($att1, $att2) = (0, 0);
             while (($att1 < $alpha) && ($att2 < $alpha)) {
@@ -104,10 +115,13 @@ sub filt_by_threshold {
                     $att1++;
                     $att2++;
                 }
-                my $min = ($s1 - $att1);
-                $min = ($s2 - $att2) if ($min > ($s2 - $att2));
-                if (($match_num) + $min < ($threshold / (1 + $threshold)) * ($s1 + $s2)) {
+                my $min = ($s2 - $att2);
+                $min = ($s1 - $att1) if ($min > ($s1 - $att1));
+                if (($match_num) + $min < $min_overlap) {
                     $match_num = 0;
+                    last;
+                }
+                if ($match_num + ($s2 - $att2) < $min_overlap) {
                     last;
                 }
             }
@@ -121,12 +135,6 @@ sub filt_by_threshold {
                     $match_num++;
                     $att1++;
                     $att2++;
-                }
-                my $min = ($s1 - $att1);
-                $min = ($s2 - $att2) if ($min > ($s2 - $att2));
-                if (($match_num) + $min < ($threshold / (1 + $threshold)) * ($s1 + $s2)) {
-                    $match_num = 0;
-                    last;
                 }
             }
             my $diff_num = ($s1 - $match_num) + ($s2 - $match_num);
