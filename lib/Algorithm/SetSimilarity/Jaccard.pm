@@ -110,7 +110,8 @@ sub filt_by_threshold {
             my $alpha = $s2 - ($min_overlap + 1) + 1;
             my $match_num = 0;
             my ($att1, $att2) = (0, 0);
-            while (($att1 < $alpha) && ($att2 < $alpha)) {
+
+            while (($att2 < $alpha) && ($att1 < $s1)) {
                 if (($set1->[$att1] <=> $set2->[$att2]) == -1) {
                     $att1++;
                 } elsif (($set1->[$att1] <=> $set2->[$att2]) == 1) {
