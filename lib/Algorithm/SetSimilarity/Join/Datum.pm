@@ -6,7 +6,7 @@
 
  use YAML;
 
- our $VERSION = "0.01";
+ our $VERSION = "0.0.0_01";
 
  sub new {
      my ($class) = @_;
