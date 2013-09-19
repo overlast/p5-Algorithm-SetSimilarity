@@ -110,54 +110,83 @@ subtest "Test of join() with two sets which have 5 common alphabet elements" => 
             is_deeply ($result, $res, "Make check of join() which return no pair")
         };
     }
-
 };
 
-
-
-
-
-
-
-=pod
-
-subtest "Test of join() with the null sets" => sub {
+subtest "Test of join() with four sets which have 5 common alphabet elements" => sub {
     my $mpj =  Algorithm::SetSimilarity::Join::MPJoin->new();
     {
         my @sets = (
-            [1,2,3,4,5,6,7,8,9,10],
-            [1,3,5,7,9,11,13,15,17,19],
-#            [2,4,6,8,10,12,14,16,18,20],
-#            [1,2,3,5,7,11,13,17,19,23],
-#            [1,2,4,8,16,32,64,128,256,512],
-#            [1,2,3,4,5,6,7,8,9,9],
-##            [1,2,3,4,5,6,7,8,8,8],
-#            [1,2,3,4,5,6,7,7,7,7],
-#            [1,2,3,4,5,6,6,6,6,6],
-#            [1,2,3,4,5,5,5,5,5,5],
-#            [1,2,3,4,4,4,4,4,4,4],
-#            [1,2,3,3,3,3,3,3,3,3],
-#            [1,2,2,2,2,2,2,2,2,2],
-#            [1,2,3,4,5,6,7,8,9,],
-#            [1,2,3,4,5,6,7,8,],
-#            [1,2,3,4,5,6,7,],
-#            [1,2,3,4,5,6,],
-#            [1,2,3,4,5,],
-#            [1,2,3,4,],
-#            [1,2,3,],
-#            [1,2,],
-#            [1,],
+            ["a","b","c","d","e","f","g","h","i","j"],
+            ["a","b","c","d","e","k","l","m","n","o"],
+            ["k","l","m","n","o","p","q","r","s","t"],
+            ["p","q","r","s","t","u","v","w","x","y"],
+            ["u","v","w","x","y","z","A","B","C","D"],
         );
         my $datum = Algorithm::SetSimilarity::Join::Datum->new();
         $datum->push_multi(\@sets);
 
-        my $threshold = 0.33;
-        my $result = $mpj->join($datum, $threshold);
-        print Dump $result;
-        is_deeply ($result, [], "Make check of join() with two null sets")
+        subtest "using 0.33 as a threshold value" => sub {
+            my $threshold = 0.33;
+            my $result = $mpj->join($datum, $threshold);
+            my $res = [
+                [0, 1, 0.333333333333333],
+                [1, 2, 0.333333333333333],
+                [2, 3, 0.333333333333333],
+                [3, 4, 0.333333333333333],
+            ];
+            is_deeply ($result, $res, "Make check of join() which return four pairs")
+        };
+    }
+    {
+        my @sets = (
+            ["a","b","c","d","e","f","g","h","i","j"],
+            ["a","b","c","d","e","k","l","m","n","o"],
+            ["k","l","m","n","o","p","q","r","s","t"],
+            ["p","q","r","s","t","u","v","w","x","y"],
+            ["u","v","w","x","y","z","A","B","C","D"],
+            ["f","g","h","i","j","k","l","m","n","o"],
+        );
+        my $datum = Algorithm::SetSimilarity::Join::Datum->new();
+        $datum->push_multi(\@sets);
+        subtest "using 0.33 as a threshold value" => sub {
+            my $threshold = 0.33;
+            my $result = $mpj->join($datum, $threshold);
+            my $res = [
+                [0, 1, 0.333333333333333],
+                [0, 5, 0.333333333333333],
+                [1, 2, 0.333333333333333],
+                [1, 5, 0.333333333333333],
+                [2, 3, 0.333333333333333],
+                [2, 5, 0.333333333333333],
+                [3, 4, 0.333333333333333],
+            ];
+            is_deeply ($result, $res, "Make check of join() which return seven pairs")
+        };
     }
 };
 
-=cut
+subtest "Test of join() with four sets which have 2 common alphabet elements" => sub {
+    my $mpj =  Algorithm::SetSimilarity::Join::MPJoin->new();
+    {
+        my @sets = (
+            ["a","b","c","d"],
+            ["a","b","e","f"],
+            ["e","f","g"],
+            ["c","d",],
+        );
+        my $datum = Algorithm::SetSimilarity::Join::Datum->new();
+        $datum->push_multi(\@sets);
+        subtest "using the different size sets" => sub {
+            my $threshold = 0.33;
+            my $result = $mpj->join($datum, $threshold);
+            my $res = [
+                [0, 1, 0.333333333333333],
+                [0, 3, 0.5],
+                [1, 2, 0.4],
+            ];
+            is_deeply ($result, $res, "Make check of join() which return three pairs")
+        };
+    }
+};
 
 done_testing;
