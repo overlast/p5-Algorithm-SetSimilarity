@@ -1,6 +1,6 @@
  package Algorithm::SetSimilarity::Join::Datum;
 
- use 5.014;
+ use 5.008005;
  use strict;
  use warnings;
 
@@ -35,7 +35,7 @@
      my ($self, $sets) = @_;
      my $is_update = 0;
      if ((defined $sets) && (ref $sets eq "HASH")) {
-         foreach my $key (keys $sets) {
+         foreach my $key (keys %{$sets}) {
              if ($key >= 0) {
                  $is_update += $self->update($key, $sets->{$key});
              }

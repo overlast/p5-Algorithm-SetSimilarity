@@ -52,5 +52,16 @@
       }
    },
    "release_status" : "unstable",
-   "version" : "0.01"
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/overlast/p5-Algorithm-SetSimilarity/issues"
+      },
+      "homepage" : "https://github.com/overlast/p5-Algorithm-SetSimilarity",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/overlast/p5-Algorithm-SetSimilarity.git",
+         "web" : "https://github.com/overlast/p5-Algorithm-SetSimilarity"
+      }
+   },
+   "version" : "0.0.0_01"
 }

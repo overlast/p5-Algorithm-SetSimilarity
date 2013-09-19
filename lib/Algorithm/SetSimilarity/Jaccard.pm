@@ -1,6 +1,6 @@
 package Algorithm::SetSimilarity::Jaccard;
 
-use 5.014;
+use 5.008005;
 use strict;
 use warnings;
 
