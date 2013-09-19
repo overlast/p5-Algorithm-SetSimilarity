@@ -49,7 +49,7 @@ sub join {
                 my $match_num = 0;
                 my ($att1, $att2) = (0, 0);
 
-                while (($att1 < $alpha) && ($att2 < $alpha)) {
+                while (($att2 < $alpha) && ($att1 < $s1)) {
                     if (($p_set->[$att1] <=> $c_set->[$att2]) == -1) {
                         $att1++;
                     } elsif (($p_set->[$att1] <=> $c_set->[$att2]) == 1) {
