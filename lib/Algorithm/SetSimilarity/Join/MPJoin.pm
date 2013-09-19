@@ -4,8 +4,6 @@ use 5.008005;
 use strict;
 use warnings;
 
-use YAML;
-
 our $VERSION = "0.01";
 
 sub new {

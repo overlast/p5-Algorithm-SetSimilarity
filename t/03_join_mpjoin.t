@@ -5,8 +5,6 @@ use Test::More;
 use Algorithm::SetSimilarity::Join::MPJoin;
 use Algorithm::SetSimilarity::Join::Datum;
 
-use YAML;
-
 subtest "Test of initializing" => sub {
     my $mpj =  Algorithm::SetSimilarity::Join::MPJoin->new();
     subtest "with the default parameters" => sub {
