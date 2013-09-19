@@ -88,7 +88,7 @@ subtest "Test of get_similarity() using the string elements" => sub {
 };
 
 subtest "Test of get_similarity() using the number elements" => sub {
-    my $jacc =  Algorithm::SetSimilarity::Jaccard->new();
+    my $jacc =  Algorithm::SetSimilarity::Jaccard->new({"data_type" => "number"});
     {
         my @set1 = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
         my @set2 = (1, 2, 3, 4, 5, 11, 12, 13, 14, 15);
@@ -187,7 +187,7 @@ subtest "Test of filt_by_threshold() using the string elements" => sub {
 };
 
 subtest "Test of filt_by_threshold() using the number elements" => sub {
-    my $jacc =  Algorithm::SetSimilarity::Jaccard->new();
+    my $jacc =  Algorithm::SetSimilarity::Jaccard->new({"data_type" => "number"});
     {
         my @set1 = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
         my @set2 = (1, 2, 3, 4, 5, 11, 12, 13, 14, 15);

@@ -2,18 +2,18 @@
 
  use 5.008005;
  use strict;
-# use warnings;
-
- use YAML;
+ use warnings;
 
  our $VERSION = "0.0.0_01";
 
  sub new {
-     my ($class) = @_;
+     my ($class, $param) = @_;
      my @array = ();
      my %hash = (
          "datum" => \@array,
+         "data_type" => "string",
      );
+     $hash{"data_type"} = $param->{"data_type"} if (exists $param->{"data_type"});
      bless \%hash, $class;
  }
 
@@ -50,7 +50,12 @@
      if ((defined $set) && (ref $set eq "ARRAY")) {
          @array = @{$set};
          if ($#$set > 0) {
-             @array = sort { $a <=> $b || $a cmp $b } @{$set};
+             if ($self->{data_type} eq "number") {
+                 @array = sort { $a <=> $b } @{$set};
+             }
+             else {
+                 @array = sort { $a cmp $b } @{$set};
+             }
          }
      }
      return \@array;

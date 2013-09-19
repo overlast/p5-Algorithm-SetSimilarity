@@ -48,18 +48,26 @@ sub join {
                 my ($att1, $att2) = (0, 0);
 
                 while (($att2 < $alpha) && ($att1 < $s1)) {
-                    if (($p_set->[$att1] <=> $c_set->[$att2]) == -1) {
-                        $att1++;
-                    } elsif (($p_set->[$att1] <=> $c_set->[$att2]) == 1) {
-                        $att2++;
-                    } elsif (($p_set->[$att1] cmp $c_set->[$att2]) == -1) {
-                        $att1++;
-                    } elsif (($p_set->[$att1] cmp $c_set->[$att2]) == 1) {
-                        $att2++;
+                    if ($datum->{data_type} eq "number") {
+                        if (($p_set->[$att1] <=> $c_set->[$att2]) == -1) {
+                            $att1++;
+                        } elsif (($p_set->[$att1] <=> $c_set->[$att2]) == 1) {
+                            $att2++;
+                        }  else {
+                            $match_num++;
+                            $att1++;
+                            $att2++;
+                        }
                     } else {
-                        $match_num++;
-                        $att1++;
-                        $att2++;
+                        if (($p_set->[$att1] cmp $c_set->[$att2]) == -1) {
+                            $att1++;
+                        } elsif (($p_set->[$att1] cmp $c_set->[$att2]) == 1) {
+                            $att2++;
+                        } else {
+                            $match_num++;
+                            $att1++;
+                            $att2++;
+                        }
                     }
                     my $min = ($s2 - $att2);
                     $min = ($s1 - $att1) if ($min > ($s1 - $att1));
@@ -70,22 +78,30 @@ sub join {
                 }
                 next unless ($match_num >= 1);
                 while (($att1 < $s1) && ($att2 < $s2)) {
-                    if (($p_set->[$att1] <=> $c_set->[$att2]) == -1) {
-                        last if ($match_num + ($s1 - $att1) < $min_overlap);
-                        $att1++;
-                    } elsif (($p_set->[$att1] <=> $c_set->[$att2]) == 1) {
-                        last if ($match_num + ($s2 - $att2) < $min_overlap);
-                        $att2++;
-                    } elsif (($p_set->[$att1] cmp $c_set->[$att2]) == -1) {
-                        last if ($match_num + ($s1 - $att1) < $min_overlap);
-                        $att1++;
-                    } elsif (($p_set->[$att1] cmp $c_set->[$att2]) == 1) {
-                        last if ($match_num + ($s2 - $att2) < $min_overlap);
-                        $att2++;
+                    if ($datum->{data_type} eq "number") {
+                        if (($p_set->[$att1] <=> $c_set->[$att2]) == -1) {
+                            last if ($match_num + ($s1 - $att1) < $min_overlap);
+                            $att1++;
+                        } elsif (($p_set->[$att1] <=> $c_set->[$att2]) == 1) {
+                            last if ($match_num + ($s2 - $att2) < $min_overlap);
+                            $att2++;
+                        } else {
+                            $match_num++;
+                            $att1++;
+                            $att2++;
+                        }
                     } else {
-                        $match_num++;
-                        $att1++;
-                        $att2++;
+                        if (($p_set->[$att1] cmp $c_set->[$att2]) == -1) {
+                            last if ($match_num + ($s1 - $att1) < $min_overlap);
+                            $att1++;
+                        } elsif (($p_set->[$att1] cmp $c_set->[$att2]) == 1) {
+                            last if ($match_num + ($s2 - $att2) < $min_overlap);
+                            $att2++;
+                        }  else {
+                            $match_num++;
+                            $att1++;
+                            $att2++;
+                        }
                     }
                 }
                 last unless ($match_num >= $min_overlap + 1);
