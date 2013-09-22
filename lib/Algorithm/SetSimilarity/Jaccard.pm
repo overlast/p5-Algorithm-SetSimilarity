@@ -41,7 +41,7 @@ sub estimate_data_type {
         $self->{data_type} = $type1;
         $is_estimate = 1;
     }
-    return;
+    return $is_estimate;
 }
 
 sub get_similarity {
