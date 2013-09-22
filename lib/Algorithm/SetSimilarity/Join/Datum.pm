@@ -4,7 +4,7 @@
  use strict;
  use warnings;
 
- our $VERSION = "0.0.0_01";
+ our $VERSION = "0.0.0_02";
 
  use Scalar::Util;
 
