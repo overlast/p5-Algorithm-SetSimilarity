@@ -6,6 +6,8 @@ use warnings;
 
 our $VERSION = "0.0.0_01";
 
+use Scalar::Util;
+
 sub new {
     my ($class, $param) = @_;
     my %hash = ();
@@ -25,18 +27,31 @@ sub get_sets {
 
 sub estimate_data_type {
     my ($self, $set1, $set2) = @_;
-    my $is_estimate = -1;
+    my $is_estimate = 0;
+    my ($type1, $type2) = ("string","string");
+
+    if (Scalar::Util::looks_like_number($set1->[0])) {
+        $type1 = "number";
+    }
+    if (Scalar::Util::looks_like_number($set2->[0])) {
+        $type2 = "number";
+    }
+
+    if ($type1 eq $type2) {
+        $self->{data_type} = $type1;
+        $is_estimate = 1;
+    }
     return;
 }
 
 sub get_similarity {
     my ($self, $set1, $set2, $threshold) = @_;
     my $score = -1.0;
-
     if ((ref $set1 eq "ARRAY") && (ref $set2 eq "ARRAY") && (@$set1) && (@$set2)) {
         if ((defined $threshold) && ($threshold > 0.0)) {
             $score = $self->filt_by_threshold($set1, $set2, $threshold);
         } else{
+            use YAML; print Dump "hey";
             ($set1, $set2) = $self->_swap_set_descending_order($set1, $set2);
             my $s1 = $#$set1 + 1;
             my $s2 = $#$set2 + 1;
@@ -104,6 +119,7 @@ sub filt_by_threshold {
     if ((ref $set1 eq "ARRAY") && (ref $set2 eq "ARRAY") &&
             (@$set1) && (@$set2) &&
                 ($threshold > 0.0) && ($threshold <= 1.0)) {
+
         for(my $r = 0; $r <= 0; $r++) {
             ($set1, $set2) = $self->_swap_set_descending_order($set1, $set2);
             my $s1 = $#$set1 + 1;
@@ -155,25 +171,23 @@ sub filt_by_threshold {
 
                 last unless ($match_num >= 1);
                 while (($att1 < $s1) && ($att2 < $s2)) {
+                    my $judge = -1;
                     if ($self->{data_type} eq "number") {
-                        my $judge = -1;
-                        if ($self->{data_type} eq "number") {
-                            $judge = ($set1->[$att1] <=> $set2->[$att2]);
-                        } else {
-                            $judge = ($set1->[$att1] cmp $set2->[$att2]);
-                        }
+                        $judge = ($set1->[$att1] <=> $set2->[$att2]);
+                    } else {
+                        $judge = ($set1->[$att1] cmp $set2->[$att2]);
+                    }
 
-                        if ($judge == -1) {
-                            last if ($match_num + ($s1 - $att1) < $min_overlap);
-                            $att1++;
-                        } elsif ($judge == 1) {
-                            last if ($match_num + ($s2 - $att2) < $min_overlap);
-                            $att2++;
-                        } else {
-                            $match_num++;
-                            $att1++;
-                            $att2++;
-                        }
+                    if ($judge == -1) {
+                        last if ($match_num + ($s1 - $att1) < $min_overlap);
+                        $att1++;
+                    } elsif ($judge == 1) {
+                        last if ($match_num + ($s2 - $att2) < $min_overlap);
+                        $att2++;
+                    } else {
+                        $match_num++;
+                        $att1++;
+                        $att2++;
                     }
                 }
                 last unless ($match_num >= $min_overlap + 1);
