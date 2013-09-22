@@ -35,6 +35,37 @@ subtest "Test of get_similarity() with the null sets" => sub {
     }
 };
 
+subtest "Test of estimate_data_type() with the null sets" => sub {
+    my $jacc =  Algorithm::SetSimilarity::Jaccard->new();
+    {
+        my @set1 = ("this", "is");
+        my @set2 = ("that", "is");
+        my $is_estimate = $jacc->estimate_data_type(\@set1, \@set2);
+        is ($is_estimate, 1, "Make check of estimating the data type of two sets");
+        is (($jacc->{datatype} eq "string"), 1, "Make check of matching the data type between two sets");
+    }
+    {
+        my @set1 = (1, 2);
+        my @set2 = (3, 4);
+        my $is_estimate = $jacc->estimate_data_type(\@set1, \@set2);
+        is ($is_estimate, 1, "Make check of estimating the data type of two sets");
+        is (($jacc->{datatype} eq "number"), 1, "Make check of matching the data type between two sets");
+    }
+    {
+        my @set1 = ("this", "is");
+        my @set2 = (3, 4);
+        my $is_estimate = $jacc->estimate_data_type(\@set1, \@set2);
+        is ($is_estimate, 0, "Make check of estimating the data type of two sets");
+    }
+    {
+        my @set1 = (2, 1);
+        my @set2 = ("that", "is");
+        my $is_estimate = $jacc->estimate_data_type(\@set1, \@set2);
+        is ($is_estimate, 0, "Make check of estimating the data type of two sets");
+    }
+};
+
+
 subtest "Test of get_similarity() using the string elements" => sub {
     my $jacc =  Algorithm::SetSimilarity::Jaccard->new();
     {
