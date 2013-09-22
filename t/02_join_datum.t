@@ -30,6 +30,42 @@ subtest "Test of check_pushability()" => sub {
     };
 };
 
+subtest "Test of estimate_data_type() with the null sets" => sub {
+    my $datum =  Algorithm::SetSimilarity::Join::Datum->new();
+    {
+        my @set = ("this", "is");
+        my $is_estimate = $datum->estimate_data_type(\@set);
+        is ($is_estimate, 1, "Make check of estimating the data type of a set");
+        is (($datum->{data_type} eq "string"), 1, "Make check of matching the data type of the elements in a set");
+    }
+    {
+        my @set = (1, 2);
+        my $is_estimate = $datum->estimate_data_type(\@set);
+        is ($is_estimate, 1, "Make check of estimating the data type of two sets");
+        is (($datum->{data_type} eq "number"), 1, "Make check of matching the data type of the elements in a set");
+    }
+    {
+        my @set = ("this", 1);
+        my $is_estimate = $datum->estimate_data_type(\@set);
+        is ($is_estimate, 0, "Make check of failing to estimate the data type of a set");
+    }
+    {
+        my @set = ("this","is", 1);
+        my $is_estimate = $datum->estimate_data_type(\@set);
+        is ($is_estimate, 0, "Make check of failing to estimate the data type of a set");
+    }
+    {
+        my @set = ("this","is", "a", 1);
+        my $is_estimate = $datum->estimate_data_type(\@set);
+        is ($is_estimate, 0, "Make check of failing to estimate the data type of a set");
+    }
+    {
+        my @set = ("this","is", "a", "test", 1);
+        my $is_estimate = $datum->estimate_data_type(\@set);
+        is ($is_estimate, 0, "Make check of failing to estimate the data type of a set");
+    }
+};
+
 subtest "Test of push()" => sub {
     my $datum =  Algorithm::SetSimilarity::Join::Datum->new();
     subtest "with one set" => sub {
