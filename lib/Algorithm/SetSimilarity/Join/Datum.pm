@@ -47,23 +47,24 @@
 
  sub estimate_data_type {
      my ($self, $set) = @_;
-     my $is_estimate = 1;
+     my $is_estimate = -1;
      my $type = "";
      my $max_check_elements = 5;
-     for (my $i = 0; ($i < $#$set) && ($i < $max_check_elements); $i++) {
+     for (my $i = 0; ($i <= $#$set) && ($i < $max_check_elements); $i++) {
          my $tmp_type = "";
-         if (Scalar::Util::looks_like_number($set->[0])) {
+         if (Scalar::Util::looks_like_number($set->[$i])) {
              $tmp_type = "number";
          } else {
              $tmp_type = "string";
          }
-
          if ($type eq "") {
              $type = $tmp_type;
+             $is_estimate = 1;
          } elsif ($type ne $tmp_type) {
              $is_estimate = 0;
              last;
          }
+
      }
      $self->{data_type} = $type if ($is_estimate);
      return $is_estimate;
