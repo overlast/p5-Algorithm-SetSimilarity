@@ -3,7 +3,7 @@ use 5.008005;
 use strict;
 use warnings;
 
-our $VERSION = "0.0.0_01";
+our $VERSION = "0.0.0_02";
 
 
 
@@ -36,4 +36,3 @@ it under the same terms as Perl itself.
 Toshinori Sato (@overlast) E<lt>overlasting@gmail.comE<gt>
 
 =cut
-
