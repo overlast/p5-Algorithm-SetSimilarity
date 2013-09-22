@@ -4,7 +4,7 @@ use 5.008005;
 use strict;
 use warnings;
 
-our $VERSION = "0.0.0_01";
+our $VERSION = "0.0.0_02";
 
 use Scalar::Util;
 
@@ -51,7 +51,6 @@ sub get_similarity {
         if ((defined $threshold) && ($threshold > 0.0)) {
             $score = $self->filt_by_threshold($set1, $set2, $threshold);
         } else{
-            use YAML; print Dump "hey";
             ($set1, $set2) = $self->_swap_set_descending_order($set1, $set2);
             my $s1 = $#$set1 + 1;
             my $s2 = $#$set2 + 1;
