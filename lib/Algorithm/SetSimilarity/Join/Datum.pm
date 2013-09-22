@@ -6,12 +6,13 @@
 
  our $VERSION = "0.0.0_01";
 
+ use Scalar::Util;
+
  sub new {
      my ($class, $param) = @_;
      my @array = ();
      my %hash = (
          "datum" => \@array,
-         "data_type" => "string",
      );
      $hash{"data_type"} = $param->{"data_type"} if (exists $param->{"data_type"});
      bless \%hash, $class;
@@ -44,12 +45,37 @@
      return $is_update;
  }
 
+ sub estimate_data_type {
+     my ($self, $set) = @_;
+     my $is_estimate = 1;
+     my $type = "";
+     my $max_check_elements = 5;
+     for (my $i = 0; ($i < $#$set) && ($i < $max_check_elements); $i++) {
+         my $tmp_type = "";
+         if (Scalar::Util::looks_like_number($set->[0])) {
+             $tmp_type = "number";
+         } else {
+             $tmp_type = "string";
+         }
+
+         if ($type eq "") {
+             $type = $tmp_type;
+         } elsif ($type ne $tmp_type) {
+             $is_estimate = 0;
+             last;
+         }
+     }
+     $self->{data_type} = $type if ($is_estimate);
+     return $is_estimate;
+ }
+
  sub sort_set {
      my ($self, $set) = @_;
      my @array = ();
      if ((defined $set) && (ref $set eq "ARRAY")) {
          @array = @{$set};
          if ($#$set > 0) {
+             $self->estimate_data_type($set) unless (exists $self->{data_type});
              if ($self->{data_type} eq "number") {
                  @array = sort { $a <=> $b } @{$set};
              }
