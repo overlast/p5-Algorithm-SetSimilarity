@@ -102,6 +102,20 @@ subtest "Test of _swap_set_descending_order()" => sub {
     }
 };
 
+subtest "Test of get_squared_norm()" => sub {
+    my $jacc =  Algorithm::SetSimilarity::WeightedJaccard->new();
+    {
+        my %set = ("elem1" => 1);
+        my $score = $jacc->get_squared_norm(\%set);
+        is ($score, 1, "Make check of get_similarity() with one element");
+    }
+    {
+        my %set = ("elem1" => 1, "elem2" => 2,);
+        my $score = $jacc->get_squared_norm(\%set);
+        is ($score, 5, "Make check of get_similarity() with one element");
+    }
+};
+
 subtest "Test of get_similarity() using the string elements" => sub {
     my $jacc =  Algorithm::SetSimilarity::WeightedJaccard->new();
     {
