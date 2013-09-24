@@ -1,0 +1,277 @@
+use strict;
+
+use Test::More;
+
+use Algorithm::SetSimilarity::WeightedJaccard;
+
+subtest "Test of initializing" => sub {
+    my $jacc =  Algorithm::SetSimilarity::WeightedJaccard->new();
+    subtest "with the default parameters" => sub {
+        is ("Algorithm::SetSimilarity::WeightedJaccard", ref $jacc, "Get Algorithm::SetSimilarity::WeightedJaccard object");
+    };
+};
+
+
+subtest "Test of get_similarity() with the null sets" => sub {
+    my $jacc =  Algorithm::SetSimilarity::WeightedJaccard->new();
+    {
+        my %set1 = ();
+        my %set2 = ();
+        my $score = $jacc->get_similarity(\%set1, \%set2);
+        is ($score, -1.0, "Make check of get_similarity() with two null sets")
+    }
+
+    {
+        my %set1 = ("there");
+        my %set2 = ();
+        my $score = $jacc->get_similarity(\%set1, \%set2);
+        is ($score, -1.0, "Make check of get_similarity() with one null set")
+    }
+
+    {
+        my %set1 = ();
+        my %set2 = ("there");
+        my $score = $jacc->get_similarity(\%set1, \%set2);
+        is ($score, -1.0, "Make check of get_similarity() with one null set")
+    }
+};
+
+subtest "Test of estimate_data_type() with the null sets" => sub {
+    my $jacc =  Algorithm::SetSimilarity::WeightedJaccard->new();
+    {
+        my %set1 = ("this" => 1, "is" => 1);
+        my %set2 = ("that" => 1, "is" => 1);
+        my $is_estimate = $jacc->estimate_data_type(\%set1, \%set2);
+        is ($is_estimate, 1, "Make check of estimating the data type of two sets");
+        is (($jacc->{data_type} eq "string"), 1, "Make check of matching the data type between two sets");
+    }
+    {
+        my %set1 = (1 => 1, 2 => 1);
+        my %set2 = (3 => 1, 4 => 1);
+        my $is_estimate = $jacc->estimate_data_type(\%set1, \%set2);
+        is ($is_estimate, 1, "Make check of estimating the data type of two sets");
+        is (($jacc->{data_type} eq "number"), 1, "Make check of matching the data type between two sets");
+    }
+    {
+        my %set1 = ("this" => 1, "is" => 1);
+        my %set2 = (3 => 1, 4 => 1);
+        my $is_estimate = $jacc->estimate_data_type(\%set1, \%set2);
+        is ($is_estimate, 0, "Make check of estimating the data type of two sets");
+    }
+    {
+        my %set1 = (2 => 1, 1 => 1);
+        my %set2 = ("that" => 1, "is" => 1);
+        my $is_estimate = $jacc->estimate_data_type(\%set1, \%set2);
+        is ($is_estimate, 0, "Make check of estimating the data type of two sets");
+    }
+};
+
+subtest "Test of _swap_set_ascending_order()" => sub {
+    my $jacc =  Algorithm::SetSimilarity::WeightedJaccard->new();
+    {
+        my $set1 = {"there" => 1, "is" => 1, "a" => 1, "element" => 1};
+        my $set2 = {"there" => 1};
+        my $ans = {"there" => 1, "is" => 1, "a" => 1, "element" => 1};
+        ($set1, $set2) = $jacc->_swap_set_ascending_order($set1, $set2);
+        is_deeply ($set2, $ans, "Make check of _swap_set_ascending_order()")
+    }
+    {
+        my $set1 = {"there" => 1};
+        my $set2 = {"there" => 1, "is" => 1, "a" => 1, "element" => 1};
+        my $ans = {"there" => 1, "is" => 1, "a" => 1, "element" => 1};
+        ($set1, $set2) = $jacc->_swap_set_ascending_order($set1, $set2);
+        is_deeply ($set2, $ans, "Make check of _swap_set_ascending_order()")
+    }
+};
+
+subtest "Test of _swap_set_descending_order()" => sub {
+    my $jacc =  Algorithm::SetSimilarity::WeightedJaccard->new();
+    {
+        my $set1 = {"there" => 1, "is" => 1, "a" => 1, "element" => 1};
+        my $set2 = {"there" => 1};
+        my $ans = {"there" => 1};
+        ($set1, $set2) = $jacc->_swap_set_descending_order($set1, $set2);
+        is_deeply ($set2, $ans, "Make check of _swap_set_descending_order()")
+    }
+    {
+        my $set1 = {"there" => 1};
+        my $set2 = {"there" => 1, "is" => 1, "a" => 1, "element" => 1};
+        my $ans = {"there" => 1};
+        ($set1, $set2) = $jacc->_swap_set_descending_order($set1, $set2);
+        is_deeply ($set2, $ans, "Make check of _swap_set_descending_order()")
+    }
+};
+
+subtest "Test of get_similarity() using the string elements" => sub {
+    my $jacc =  Algorithm::SetSimilarity::WeightedJaccard->new();
+    {
+        my %set1 = ("there" => 1);
+        my %set2 = ("there" => 1);
+        my $score = $jacc->get_similarity(\%set1, \%set2);
+        is ($score, 1, "Make check of get_similarity() with one element")
+    }
+    {
+        my %set1 = ("there" => 1, "is" => 1);
+        my %set2 = ("there" => 1, "is" => 1);
+        my $score = $jacc->get_similarity(\%set1, \%set2);
+        is ($score, 1, "Make check of get_similarity() with sorted two elements")
+    }
+    {
+        my %set1 = ("is" => 1, "there" => 1);
+        my %set2 = ("there" => 1, "is" => 1);
+        my $score = $jacc->get_similarity(\%set1, \%set2);
+        is ($score, 1, "Make check of get_similarity() with unsorted two elements")
+    }
+    {
+        my %set1 = ("Orange" => 1, "Strowberry" => 1, "Pear" => 1, "Grape" => 1);
+        my %set2 = ("Orange" => 1, "Strowberry" => 1, "Pear" => 1, "Peach" => 1);
+        my $score = $jacc->get_similarity(\%set1, \%set2);
+        is ($score, 0.6, "Make check of get_similarity() with unsorted two elements")
+    }
+    {
+        my %set1 = ("Orange" => 1, "Strowberry" => 1, "Pear" => 1, "Peach" => 1);
+        my %set2 = ("Orange" => 1, "Strowberry" => 1, "Pear" => 1, "Grape" => 1);
+        my $score = $jacc->get_similarity(\%set1, \%set2);
+        is ($score, 0.6, "Make check of get_similarity() with unsorted two elements")
+    }
+    {
+        my %set1 = ("Pear" => 1, "Peach" => 1, "Orange" => 1, "Strowberry" => 1);
+        my %set2 = ("Orange" => 1, "Strowberry" => 1, "Pear" => 1, "Grape" => 1);
+        my $score = $jacc->get_similarity(\%set1, \%set2);
+        is ($score, 0.6, "Make check of get_similarity() with unsorted two elements")
+    }
+    {
+        my %set1 = ("Orange" => 1, "Strowberry" => 1, "Apple" => 1, "Peach" => 1);
+        my %set2 = ("Orange" => 1, "Strowberry" => 1, "Kiwifruit" => 1, "Grape" => 1);
+        my $score = $jacc->get_similarity(\%set1, \%set2);
+        is ($score, 0.333333333333333, "Make check of get_similarity() with unsorted two elements")
+    }
+    {
+        my %set1 = ("Orange" => 2, "Strowberry" => 1, "Apple" => 1, "Peach" => 1);
+        my %set2 = ("Orange" => 1, "Strowberry" => 2, "Kiwifruit" => 1, "Grape" => 1);
+        my $score = $jacc->get_similarity(\%set1, \%set2);
+        is ($score, 0.4, "Make check of get_similarity() with unsorted two elements")
+    }
+
+=pod
+    {
+        my %set1 = ("Orange" => 1, "Strowberry" => 1, "Pear" => 1, "Grape" => 1);
+        my %set2 = ("Orange" => 1, "Strowberry" => 1, "Pear" => 1, "Peach" => 1);
+        for (my $i = 0.1; $i <= 0.6; $i += 0.1) {
+            my $score = $jacc->get_similarity(\%set1, \%set2, $i);
+            is ($score, 0.6, "Make check of get_similarity() using $i as a threshold with unsorted four elements");
+        }
+
+
+        for (my $i = 0.7; $i <= 1.0; $i += 0.1) {
+            my $score = $jacc->get_similarity(\%set1, \%set2, $i);
+            is ($score, -1.0, "Make check of get_similarity() using $i as a threshold with unsorted four elements");
+        }
+    }
+=cut
+
+};
+
+
+
+=pod
+
+subtest "Test of get_similarity() using the number elements" => sub {
+    my $jacc =  Algorithm::SetSimilarity::WeightedJaccard->new({"data_type" => "number"});
+    {
+        my @set1 = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        my @set2 = (1, 2, 3, 4, 5, 11, 12, 13, 14, 15);
+        my $score = $jacc->get_similarity(\@set1, \@set2);
+        is ($score, 0.333333333333333, "Make check of get_similarity() which return the 0.33 as a value of score")
+    }
+    {
+        my @set1 = (6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+        my @set2 = (1, 2, 3, 4, 5, 11, 12, 13, 14, 15);
+        my $score = $jacc->get_similarity(\@set1, \@set2);
+        is ($score, 0.333333333333333, "Make check of get_similarity() which return the 0.33 as a value of score")
+    }
+};
+
+subtest "Test of filt_by_threshold() using the string elements" => sub {
+    my $jacc =  Algorithm::SetSimilarity::WeightedJaccard->new();
+        {
+        my @set1 = ("there");
+        my @set2 = ("there");
+        my $i = 0.0;
+        my $score = $jacc->filt_by_threshold(\@set1, \@set2, $i);
+        is ($score, -1.0, "Make check of filt_by_threshold() using $i as a threshold with one element");
+    }
+    {
+        my @set1 = ("there");
+        my @set2 = ("there");
+        for (my $i = 0.1; $i <= 1.0; $i += 0.1) {
+            my $score = $jacc->filt_by_threshold(\@set1, \@set2, $i);
+            is ($score, 1.0, "Make check of filt_by_threshold() using $i as a threshold with one element");
+        }
+    }
+    {
+        my @set1 = ("there", "is");
+        my @set2 = ("there", "is");
+        for (my $i = 0.1; $i <= 1.0; $i += 0.1) {
+            my $score = $jacc->filt_by_threshold(\@set1, \@set2, $i);
+            is ($score, 1.0, "Make check of filt_by_threshold() using $i as a threshold with sorted two elements");
+        }
+    }
+    {
+        my @set1 = ("there", "is");
+        my @set2 = ("is", "there");
+        for (my $i = 0.1; $i <= 1.0; $i += 0.1) {
+            my $score = $jacc->filt_by_threshold(\@set1, \@set2, $i);
+            is ($score, 1.0, "Make check of filt_by_threshold() using $i as a threshold with sorted two elements");
+        }
+    }
+    {
+        my @set1 = ("Orange", "Strowberry", "Pear", "Grape");
+        my @set2 = ("Orange", "Strowberry", "Pear", "Peach");
+        for (my $i = 0.1; $i <= 0.6; $i += 0.1) {
+            my $score = $jacc->filt_by_threshold(\@set1, \@set2, $i);
+            is ($score, 0.6, "Make check of filt_by_threshold() using $i as a threshold with unsorted four elements");
+        }
+        for (my $i = 0.7; $i <= 1.0; $i += 0.1) {
+            my $score = $jacc->filt_by_threshold(\@set1, \@set2, $i);
+            is ($score, -1.0, "Make check of filt_by_threshold() using $i as a threshold with unsorted four elements");
+        }
+    }
+};
+
+subtest "Test of filt_by_threshold() using the number elements" => sub {
+    my $jacc =  Algorithm::SetSimilarity::WeightedJaccard->new({"data_type" => "number"});
+    {
+        my @set1 = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        my @set2 = (1, 2, 3, 4, 5, 11, 12, 13, 14, 15);
+        my $threshold = 0.33;
+        my $score = $jacc->filt_by_threshold(\@set1, \@set2, $threshold);
+        is ($score, 0.333333333333333, "Make check of filt_by_threshold() which return the 0.33 as a value of score")
+    }
+{
+        my @set1 = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        my @set2 = (1, 2, 3, 4, 5, 11, 12, 13, 14, 15);
+        my $threshold = 0.34;
+        my $score = $jacc->filt_by_threshold(\@set1, \@set2, $threshold);
+        is ($score, -1, "Make check of filt_by_threshold() which return the -1 as a message of filter")
+    }
+    {
+        my @set1 = (6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+        my @set2 = (1, 2, 3, 4, 5, 11, 12, 13, 14, 15);
+        my $threshold = 0.33;
+        my $score = $jacc->filt_by_threshold(\@set1, \@set2, $threshold);
+        is ($score, 0.333333333333333, "Make check of filt_by_threshold() which return the 0.33 as a value of score")
+    }
+    {
+        my @set1 = (6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+        my @set2 = (1, 2, 3, 4, 5, 11, 12, 13, 14, 15);
+        my $threshold = 0.34;
+        my $score = $jacc->filt_by_threshold(\@set1, \@set2, $threshold);
+        is ($score, -1, "Make check of filt_by_threshold() which return the -1 as a message of filter")
+    }
+
+};
+
+=cut
+
+done_testing;
