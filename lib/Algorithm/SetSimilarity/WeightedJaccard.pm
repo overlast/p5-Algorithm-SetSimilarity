@@ -131,6 +131,7 @@ sub make_pair_from_hash {
         my $entry = [$key, $set->{$key}];
         push @pair, $entry;
     }
+    $self->estimate_data_type($set) unless (exists $self->{data_type});
     if ($self->{data_type} eq "number") {
         @pair = sort { $a->[0] <=> $b->[0] } @pair;
     } else {
