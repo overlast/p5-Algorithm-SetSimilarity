@@ -139,11 +139,11 @@ sub filt_by_threshold {
                 }
 
                 my $min_overlap = int(($threshold / (1 + $threshold)) * ($s1 + $s2));
-                my $alpha = $s2 - ($min_overlap + 1) + 1;
+                my $alpha = $s2 - $min_overlap + 1;
                 my $match_num = 0;
                 my ($att1, $att2) = (0, 0);
 
-                while (($att2 < $alpha) && ($att1 < $s1)) {
+                while (($att2 <= $alpha) && ($att1 < $s1)) {
                     my $judge = -1;
                     if ($self->{data_type} eq "number") {
                         $judge = ($set1->[$att1] <=> $set2->[$att2]);
