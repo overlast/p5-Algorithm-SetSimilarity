@@ -21,7 +21,15 @@
  sub get_num {
      my ($self) = @_;
      my $num = 0;
-     $num = ($#{$self->{datum}} + 1) if ((exists $self->{datum}) && ($self->check_pushability($self->{datum}->[0])));
+     if (exists $self->{datum}) {
+         if ((defined $self->{datum}->[0]) && (ref $self->{datum}->[0] eq "ARRAY")) {
+             if (ref $self->{datum}->[0]->[0] eq "ARRAY") {
+                 $num = ($#{$self->{datum}} + 1) if ($self->check_pushability($self->{datum}->[0]->[0]));
+             } else {
+                 $num = ($#{$self->{datum}} + 1) if ($self->check_pushability($self->{datum}->[0]));
+             }
+         }
+     }
      return $num;
  }
 
@@ -29,6 +37,7 @@
      my ($self, $set) = @_;
      my $is_pushable = 0;
      $is_pushable = 1 if ((defined $set) && (ref $set eq "ARRAY") && (defined $set->[0]) && (ref $set->[0] eq ''));
+     $is_pushable = 1 if ((defined $set) && (ref $set eq "HASH") && ((scalar(keys %$set)) > 0));
      return $is_pushable;
  }
 
@@ -50,21 +59,41 @@
      my $is_estimate = -1;
      my $type = "";
      my $max_check_elements = 5;
-     for (my $i = 0; ($i <= $#$set) && ($i < $max_check_elements); $i++) {
-         my $tmp_type = "";
-         if (Scalar::Util::looks_like_number($set->[$i])) {
-             $tmp_type = "number";
-         } else {
-             $tmp_type = "string";
+     if (ref $set eq "ARRAY") {
+         for (my $i = 0; ($i <= $#$set) && ($i < $max_check_elements); $i++) {
+             my $tmp_type = "";
+             if (Scalar::Util::looks_like_number($set->[$i])) {
+                 $tmp_type = "number";
+             } else {
+                 $tmp_type = "string";
+             }
+             if ($type eq "") {
+                 $type = $tmp_type;
+                 $is_estimate = 1;
+             } elsif ($type ne $tmp_type) {
+                 $is_estimate = 0;
+                 last;
+             }
          }
-         if ($type eq "") {
-             $type = $tmp_type;
-             $is_estimate = 1;
-         } elsif ($type ne $tmp_type) {
-             $is_estimate = 0;
-             last;
+     } elsif (ref $set eq "HASH") {
+         my $i = 0;
+         foreach my $key (keys %$set) {
+            $i++;
+             my $tmp_type = "";
+             if (Scalar::Util::looks_like_number($key)) {
+                 $tmp_type = "number";
+             } else {
+                 $tmp_type = "string";
+             }
+             if ($type eq "") {
+                 $type = $tmp_type;
+                 $is_estimate = 1;
+             } elsif ($type ne $tmp_type) {
+                 $is_estimate = 0;
+                 last;
+             }
+             last if ($i >= $max_check_elements);
          }
-
      }
      $self->{data_type} = $type if ($is_estimate);
      return $is_estimate;
@@ -92,7 +121,11 @@
      my ($self, $id, $set) = @_;
      my $is_update = 0;
      if (($self->check_pushability($set)) && ($id < ($self->get_num()))) {
-         $set = $self->sort_set($set);
+         if (ref $set eq "ARRAY") {
+             $set = $self->sort_set($set);
+         } elsif (ref $set eq "HASH") {
+             $set = $self->make_pair_from_hash($set);
+         }
          $self->{datum}->[$id] = $set;
          $is_update = 1;
      }
@@ -110,11 +143,33 @@
      return $is_push;
  }
 
+sub make_pair_from_hash {
+    my ($self, $set) = @_;
+    my @pair = ();
+    foreach my $key (keys %$set) {
+        my $entry = [$key, $set->{$key}];
+        push @pair, $entry;
+    }
+#    use YAML; print Dump $self, $set;
+    $self->estimate_data_type($set) unless (exists $self->{data_type});
+#    print Dump $self, $set;
+    if ($self->{data_type} eq "number") {
+        @pair = sort { $a->[0] <=> $b->[0] } @pair;
+    } else {
+        @pair = sort { $a->[0] cmp $b->[0] } @pair;
+    }
+    return \@pair;
+}
+
  sub push {
      my ($self, $set) = @_;
      my $is_push = 0;
      if ($self->check_pushability($set)) {
-         $set = $self->sort_set($set);
+         if (ref $set eq "ARRAY") {
+             $set = $self->sort_set($set);
+         } elsif (ref $set eq "HASH") {
+             $set = $self->make_pair_from_hash($set);
+         }
          push @{$self->{datum}}, $set;
          $is_push = 1;
      }
