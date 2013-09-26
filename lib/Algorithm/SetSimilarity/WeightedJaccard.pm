@@ -152,6 +152,8 @@ sub make_pair_from_hash {
     return \@pair;
 }
 
+use YAML;
+
 sub filt_by_threshold {
     my ($self, $set1, $set2, $threshold) = @_;
     my $score = -1.0;
@@ -177,8 +179,8 @@ sub filt_by_threshold {
 
                 my $cum_score = 0;
 
-                my $min_overlap = int(($threshold / (1 + $threshold)) * ($s1 + $s2));
-                my $alpha = $s2 - ($min_overlap + 1) + 1;
+                my $min_overlap = int(($threshold / (1 + $threshold)) * ($cum_w1 + $cum_w2));
+                my $alpha = $cum_w2 - ($min_overlap + 1) + 1;
                 my $match_num = 0;
                 my ($att1, $att2) = (0, 0);
                 my ($w1, $w2) = ($datum1->[$att1]->[1], $datum2->[$att2]->[1]);
@@ -210,14 +212,15 @@ sub filt_by_threshold {
                         $att2++;
                         if (($att1 < $s1) && ($att2 < $s2)) {
                             ($w1, $w2) = ($datum1->[$att1]->[1], $datum2->[$att2]->[1]);
-                        $c1 += $w1;
+                            $c1 += $w1;
                             $c2 += $w2;
                         }
                     }
                 }
-
                 my $min = ($cum_w2 - $c2);
                 $min = ($cum_w1 - $c1) if ($min > ($cum_w1 - $c1));
+                print Dump "$match_num, $min";
+
                 if (($match_num) + $min < $min_overlap) {
                     $match_num = 0;
                     last;
