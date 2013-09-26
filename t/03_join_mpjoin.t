@@ -12,6 +12,31 @@ subtest "Test of initializing" => sub {
     };
 };
 
+subtest "Test of check_joinable()" => sub {
+    my $mpj = Algorithm::SetSimilarity::Join::MPJoin->new();
+    subtest "with a Datum instance" => sub {
+        my @sets = (
+            [1,2,3,4,5,6,7,8,9,10],
+            [1,3,5,7,9,11,13,15,17,19],
+        );
+        my $datum = Algorithm::SetSimilarity::Join::Datum->new();
+        my $is_pushed = $datum->push_multi(\@sets);
+        my $is_joinable = $mpj->check_joinable($datum);
+        is ($is_joinable, 1, "Algorithm::SetSimilarity::Join::Datum object is joinable");
+    };
+    subtest "with a hash structure" => sub {
+        my $hash = {
+            "data_type" => "number",
+            "datum" => [
+                [1,2,3,4,5,6,7,8,9,10],
+                [1,3,5,7,9,11,13,15,17,19],
+            ],
+        };
+        my $is_joinable = $mpj->check_joinable($hash);
+        is ($is_joinable, 0, "Unverified hash value is not joinable");
+    };
+};
+
 subtest "Test of join() with two sets which have 5 common number elements" => sub {
     my $mpj =  Algorithm::SetSimilarity::Join::MPJoin->new();
     {
