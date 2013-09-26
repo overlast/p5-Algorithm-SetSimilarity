@@ -204,7 +204,6 @@ sub filt_by_threshold {
                 }
                 my $min = ($cum_w2 - $c2);
                 $min = ($cum_w1 - $c1) if ($min > ($cum_w1 - $c1));
-                print Dump "$match_num, $min";
 
                 if (($match_num) + $min < $min_overlap) {
                     $match_num = 0;
