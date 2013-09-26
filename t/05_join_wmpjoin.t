@@ -13,7 +13,7 @@ subtest "Test of initializing" => sub {
 };
 
 subtest "Test of check_joinable()" => sub {
-    my $mpj = Algorithm::SetSimilarity::Join::MPJoin->new();
+    my $wmpj = Algorithm::SetSimilarity::Join::WMPJoin->new();
     subtest "with a Datum instance" => sub {
         my @sets = (
             {1 => 1,2 => 1,3 => 1,4 => 1,5 => 1,6 => 1,7 => 1,8 => 1,9 => 1,10 => 1},
@@ -21,7 +21,7 @@ subtest "Test of check_joinable()" => sub {
         );
         my $datum = Algorithm::SetSimilarity::Join::Datum->new();
         my $is_pushed = $datum->push_multi(\@sets);
-        my $is_joinable = $mpj->check_joinable($datum);
+        my $is_joinable = $wmpj->check_joinable($datum);
         is ($is_joinable, 1, "Algorithm::SetSimilarity::Join::Datum object is joinable");
     };
     subtest "with a hash structure" => sub {
@@ -32,7 +32,7 @@ subtest "Test of check_joinable()" => sub {
                 [[1,1],[3,1],[5,1],[7,1],[9,1],[11,1],[13,1],[15,1],[17,1],[19,1]],
             ],
         };
-        my $is_joinable = $mpj->check_joinable($hash);
+        my $is_joinable = $wmpj->check_joinable($hash);
         is ($is_joinable, 0, "Unverified hash value is not joinable");
     };
 };
@@ -44,7 +44,7 @@ subtest "Test of join() with two sets which have 5 common number elements" => su
             {1 => 1, 2 => 1, 3 => 1, 4 => 1, 5 => 1, 6 => 1, 7 => 1, 8 => 1, 9 => 1, 10 => 1},
             {1 => 1, 3 => 1, 5 => 1, 7 => 1, 9 => 1, 11 => 1, 13 => 1, 15 => 1, 17 => 1, 19 => 1},
         );
-        my $datum = Algorithm::SetSimilarity::Join::Datum->new({"data_type" => "number"});
+        my $datum = Algorithm::SetSimilarity::Join::Datum->new();
         my $is_pushed = $datum->push_multi(\@sets);
         is($is_pushed, 2, "push two sets");
 
@@ -62,15 +62,12 @@ subtest "Test of join() with two sets which have 5 common number elements" => su
             is_deeply ($result, $res, "Make check of join() which return no pair")
         };
     }
-
-=pod
-
     {
         my @sets = (
-            [2,4,6,8,10,11,13,15,17,19],
-            [1,3,5,7,9,11,13,15,17,19],
+            {2 => 1,4 => 1,6 => 1,8 => 1,10 => 1,11 => 1,13 => 1,15 => 1,17 => 1,19 => 1},
+            {1 => 1,3 => 1,5 => 1,7 => 1,9 => 1,11 => 1,13 => 1,15 => 1,17 => 1,19 => 1},
         );
-        my $datum = Algorithm::SetSimilarity::Join::Datum->new({"data_type" => "number"});
+        my $datum = Algorithm::SetSimilarity::Join::Datum->new();
         $datum->push_multi(\@sets);
 
         subtest "using 0.33 as a threshold value" => sub {
@@ -87,19 +84,14 @@ subtest "Test of join() with two sets which have 5 common number elements" => su
             is_deeply ($result, $res, "Make check of join() which return no pair")
         };
     }
-
-=cut
-
 };
-
-=pod
 
 subtest "Test of join() with two sets which have 5 common alphabet elements" => sub {
     my $wmpj =  Algorithm::SetSimilarity::Join::WMPJoin->new();
     {
         my @sets = (
-            ["a","b","c","d","e","f","g","h","i","j"],
-            ["a","b","c","d","e","k","l","m","n","o"],
+            {"a" => 1,"b" => 1,"c" => 1,"d" => 1,"e" => 1,"f" => 1,"g" => 1,"h" => 1,"i" => 1,"j" => 1},
+            {"a" => 1,"b" => 1,"c" => 1,"d" => 1,"e" => 1,"k" => 1,"l" => 1,"m" => 1,"n" => 1,"o" => 1},
         );
         my $datum = Algorithm::SetSimilarity::Join::Datum->new();
         $datum->push_multi(\@sets);
@@ -121,8 +113,8 @@ subtest "Test of join() with two sets which have 5 common alphabet elements" => 
 
     {
         my @sets = (
-            ["a","b","c","d","e","k","l","m","n","o"],
-            ["f","g","h","i","j","k","l","m","n","o"],
+            {"a" => 1,"b" => 1,"c" => 1,"d" => 1,"e" => 1,"k" => 1,"l" => 1,"m" => 1,"n" => 1,"o" => 1},
+            {"f" => 1,"g" => 1,"h" => 1,"i" => 1,"j" => 1,"k" => 1,"l" => 1,"m" => 1,"n" => 1,"o" => 1},
         );
         my $datum = Algorithm::SetSimilarity::Join::Datum->new();
         $datum->push_multi(\@sets);
@@ -147,11 +139,11 @@ subtest "Test of join() with four sets which have 5 common alphabet elements" =>
     my $wmpj =  Algorithm::SetSimilarity::Join::WMPJoin->new();
     {
         my @sets = (
-            ["a","b","c","d","e","f","g","h","i","j"],
-            ["a","b","c","d","e","k","l","m","n","o"],
-            ["k","l","m","n","o","p","q","r","s","t"],
-            ["p","q","r","s","t","u","v","w","x","y"],
-            ["u","v","w","x","y","z","A","B","C","D"],
+            {"a" => 1,"b" => 1,"c" => 1,"d" => 1,"e" => 1,"f" => 1,"g" => 1,"h" => 1,"i" => 1,"j" => 1},
+            {"a" => 1,"b" => 1,"c" => 1,"d" => 1,"e" => 1,"k" => 1,"l" => 1,"m" => 1,"n" => 1,"o" => 1},
+            {"k" => 1,"l" => 1,"m" => 1,"n" => 1,"o" => 1,"p" => 1,"q" => 1,"r" => 1,"s" => 1,"t" => 1},
+            {"p" => 1,"q" => 1,"r" => 1,"s" => 1,"t" => 1,"u" => 1,"v" => 1,"w" => 1,"x" => 1,"y" => 1},
+            {"u" => 1,"v" => 1,"w" => 1,"x" => 1,"y" => 1,"z" => 1,"A" => 1,"B" => 1,"C" => 1,"D" => 1},
         );
         my $datum = Algorithm::SetSimilarity::Join::Datum->new();
         $datum->push_multi(\@sets);
@@ -170,12 +162,12 @@ subtest "Test of join() with four sets which have 5 common alphabet elements" =>
     }
     {
         my @sets = (
-            ["a","b","c","d","e","f","g","h","i","j"],
-            ["a","b","c","d","e","k","l","m","n","o"],
-            ["k","l","m","n","o","p","q","r","s","t"],
-            ["p","q","r","s","t","u","v","w","x","y"],
-            ["u","v","w","x","y","z","A","B","C","D"],
-            ["f","g","h","i","j","k","l","m","n","o"],
+            {"a" => 1,"b" => 1,"c" => 1,"d" => 1,"e" => 1,"f" => 1,"g" => 1,"h" => 1,"i" => 1,"j" => 1},
+            {"a" => 1,"b" => 1,"c" => 1,"d" => 1,"e" => 1,"k" => 1,"l" => 1,"m" => 1,"n" => 1,"o" => 1},
+            {"k" => 1,"l" => 1,"m" => 1,"n" => 1,"o" => 1,"p" => 1,"q" => 1,"r" => 1,"s" => 1,"t" => 1},
+            {"p" => 1,"q" => 1,"r" => 1,"s" => 1,"t" => 1,"u" => 1,"v" => 1,"w" => 1,"x" => 1,"y" => 1},
+            {"u" => 1,"v" => 1,"w" => 1,"x" => 1,"y" => 1,"z" => 1,"A" => 1,"B" => 1,"C" => 1,"D" => 1},
+            {"f" => 1,"g" => 1,"h" => 1,"i" => 1,"j" => 1,"k" => 1,"l" => 1,"m" => 1,"n" => 1,"o" => 1},
         );
         my $datum = Algorithm::SetSimilarity::Join::Datum->new();
         $datum->push_multi(\@sets);
@@ -200,10 +192,10 @@ subtest "Test of join() with four sets which have 2 common alphabet elements" =>
     my $wmpj =  Algorithm::SetSimilarity::Join::WMPJoin->new();
     {
         my @sets = (
-            ["a","b","c","d"],
-            ["a","b","e","f"],
-            ["e","f","g"],
-            ["c","d",],
+            {"a" => 1,"b" => 1,"c" => 1,"d" => 1},
+            {"a" => 1,"b" => 1,"e" => 1,"f" => 1},
+            {"e" => 1,"f" => 1,"g" => 1},
+            {"c" => 1,"d" => 1,},
         );
         my $datum = Algorithm::SetSimilarity::Join::Datum->new();
         $datum->push_multi(\@sets);
@@ -219,6 +211,5 @@ subtest "Test of join() with four sets which have 2 common alphabet elements" =>
         };
     }
 };
-=cut
 
 done_testing;
