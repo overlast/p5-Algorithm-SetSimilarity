@@ -38,8 +38,6 @@ sub get_squared_norm {
     return $squared_norm;
 }
 
-use YAML;
-
 # only Jaccard coefficient yet.
 sub join {
     my ($self, $datum, $threshold) = @_;
