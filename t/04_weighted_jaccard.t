@@ -166,42 +166,33 @@ subtest "Test of get_similarity() using the string elements" => sub {
         my $score = $jacc->get_similarity(\%set1, \%set2);
         is ($score, 0.4, "Make check of get_similarity() with unsorted two elements")
     }
-
-=pod
     {
         my %set1 = ("Orange" => 1, "Strowberry" => 1, "Pear" => 1, "Grape" => 1);
         my %set2 = ("Orange" => 1, "Strowberry" => 1, "Pear" => 1, "Peach" => 1);
         for (my $i = 0.1; $i <= 0.6; $i += 0.1) {
-            my $score = $jacc->get_similarity(\%set1, \%set2, $i);
+            my $score = $jacc->filt_by_threshold(\%set1, \%set2, $i);
             is ($score, 0.6, "Make check of get_similarity() using $i as a threshold with unsorted four elements");
         }
-
-
         for (my $i = 0.7; $i <= 1.0; $i += 0.1) {
-            my $score = $jacc->get_similarity(\%set1, \%set2, $i);
+            my $score = $jacc->filt_by_threshold(\%set1, \%set2, $i);
             is ($score, -1.0, "Make check of get_similarity() using $i as a threshold with unsorted four elements");
         }
     }
-=cut
-
 };
-
-
-
-=pod
 
 subtest "Test of get_similarity() using the number elements" => sub {
     my $jacc =  Algorithm::SetSimilarity::WeightedJaccard->new({"data_type" => "number"});
     {
-        my @set1 = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-        my @set2 = (1, 2, 3, 4, 5, 11, 12, 13, 14, 15);
-        my $score = $jacc->get_similarity(\@set1, \@set2);
+        my %set1 = (1 => 1, 2 => 1, 3 => 1, 4 => 1, 5 => 1, 6 => 1, 7 => 1, 8 => 1, 9 => 1, 10 => 1,);
+        my %set2 = (1 => 1, 2 => 1, 3 => 1, 4 => 1, 5 => 1, 11 => 1, 12 => 1, 13 => 1, 14 => 1, 15 => 1,);
+        my $score = $jacc->get_similarity(\%set1, \%set2);
         is ($score, 0.333333333333333, "Make check of get_similarity() which return the 0.33 as a value of score")
     }
     {
-        my @set1 = (6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
-        my @set2 = (1, 2, 3, 4, 5, 11, 12, 13, 14, 15);
-        my $score = $jacc->get_similarity(\@set1, \@set2);
+
+        my %set1 = (6 => 1, 7 => 1, 8 => 1, 9 => 1, 10 => 1, 11 => 1, 12 => 1, 13 => 1, 14 => 1, 15 => 1,);
+        my %set2 = (1 => 1, 2 => 1, 3 => 1, 4 => 1, 5 => 1, 11 => 1, 12 => 1, 13 => 1, 14 => 1, 15 => 1,);
+        my $score = $jacc->get_similarity(\%set1, \%set2);
         is ($score, 0.333333333333333, "Make check of get_similarity() which return the 0.33 as a value of score")
     }
 };
@@ -209,46 +200,58 @@ subtest "Test of get_similarity() using the number elements" => sub {
 subtest "Test of filt_by_threshold() using the string elements" => sub {
     my $jacc =  Algorithm::SetSimilarity::WeightedJaccard->new();
         {
-        my @set1 = ("there");
-        my @set2 = ("there");
+        my %set1 = ("there" => 1);
+        my %set2 = ("there" => 1);
         my $i = 0.0;
-        my $score = $jacc->filt_by_threshold(\@set1, \@set2, $i);
+        my $score = $jacc->filt_by_threshold(\%set1, \%set2, $i);
         is ($score, -1.0, "Make check of filt_by_threshold() using $i as a threshold with one element");
     }
     {
-        my @set1 = ("there");
-        my @set2 = ("there");
+        my %set1 = ("there" => 1);
+        my %set2 = ("there" => 1);
         for (my $i = 0.1; $i <= 1.0; $i += 0.1) {
-            my $score = $jacc->filt_by_threshold(\@set1, \@set2, $i);
+            my $score = $jacc->filt_by_threshold(\%set1, \%set2, $i);
             is ($score, 1.0, "Make check of filt_by_threshold() using $i as a threshold with one element");
         }
     }
     {
-        my @set1 = ("there", "is");
-        my @set2 = ("there", "is");
+        my %set1 = ("there" => 1, "is" => 1);
+        my %set2 = ("there" => 1, "is" => 1);
         for (my $i = 0.1; $i <= 1.0; $i += 0.1) {
-            my $score = $jacc->filt_by_threshold(\@set1, \@set2, $i);
+            my $score = $jacc->filt_by_threshold(\%set1, \%set2, $i);
             is ($score, 1.0, "Make check of filt_by_threshold() using $i as a threshold with sorted two elements");
         }
     }
     {
-        my @set1 = ("there", "is");
-        my @set2 = ("is", "there");
+        my %set1 = ("there" => 1, "is" => 1);
+        my %set2 = ("is" => 1, "there" => 1);
         for (my $i = 0.1; $i <= 1.0; $i += 0.1) {
-            my $score = $jacc->filt_by_threshold(\@set1, \@set2, $i);
+            my $score = $jacc->filt_by_threshold(\%set1, \%set2, $i);
             is ($score, 1.0, "Make check of filt_by_threshold() using $i as a threshold with sorted two elements");
         }
     }
     {
-        my @set1 = ("Orange", "Strowberry", "Pear", "Grape");
-        my @set2 = ("Orange", "Strowberry", "Pear", "Peach");
+        my %set1 = ("Orange" => 1, "Strowberry" => 1, "Pear" => 1, "Grape" => 1);
+        my %set2 = ("Orange" => 1, "Strowberry" => 1, "Pear" => 1, "Peach" => 1);
         for (my $i = 0.1; $i <= 0.6; $i += 0.1) {
-            my $score = $jacc->filt_by_threshold(\@set1, \@set2, $i);
+            my $score = $jacc->filt_by_threshold(\%set1, \%set2, $i);
             is ($score, 0.6, "Make check of filt_by_threshold() using $i as a threshold with unsorted four elements");
         }
         for (my $i = 0.7; $i <= 1.0; $i += 0.1) {
-            my $score = $jacc->filt_by_threshold(\@set1, \@set2, $i);
+            my $score = $jacc->filt_by_threshold(\%set1, \%set2, $i);
             is ($score, -1.0, "Make check of filt_by_threshold() using $i as a threshold with unsorted four elements");
+        }
+    }
+    {
+        my %set1 = ("Orange" => 2, "Strowberry" => 1, "Apple" => 1, "Peach" => 1);
+        my %set2 = ("Orange" => 1, "Strowberry" => 2, "Kiwifruit" => 1, "Grape" => 1);
+        for (my $i = 0.1; $i <= 0.4; $i += 0.1) {
+            my $score = $jacc->filt_by_threshold(\%set1, \%set2, $i);
+            is ($score, 0.4, "Make check of filt_by_threshold() using $i as a threshold with unsorted four elements")
+        }
+        for (my $i = 0.5; $i <= 1.0; $i += 0.1) {
+            my $score = $jacc->filt_by_threshold(\%set1, \%set2, $i);
+            is ($score, -1.0, "Make check of filt_by_threshold() using $i as a threshold with unsorted four elements")
         }
     }
 };
@@ -256,36 +259,34 @@ subtest "Test of filt_by_threshold() using the string elements" => sub {
 subtest "Test of filt_by_threshold() using the number elements" => sub {
     my $jacc =  Algorithm::SetSimilarity::WeightedJaccard->new({"data_type" => "number"});
     {
-        my @set1 = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-        my @set2 = (1, 2, 3, 4, 5, 11, 12, 13, 14, 15);
+        my %set1 = (1 => 1, 2 => 1, 3 => 1, 4 => 1, 5 => 1, 6 => 1, 7 => 1, 8 => 1, 9 => 1, 10 => 1);
+        my %set2 = (1 => 1, 2 => 1, 3 => 1, 4 => 1, 5 => 1, 11 => 1, 12 => 1, 13 => 1, 14 => 1, 15 => 1);
         my $threshold = 0.33;
-        my $score = $jacc->filt_by_threshold(\@set1, \@set2, $threshold);
-        is ($score, 0.333333333333333, "Make check of filt_by_threshold() which return the 0.33 as a value of score")
-    }
-{
-        my @set1 = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-        my @set2 = (1, 2, 3, 4, 5, 11, 12, 13, 14, 15);
-        my $threshold = 0.34;
-        my $score = $jacc->filt_by_threshold(\@set1, \@set2, $threshold);
-        is ($score, -1, "Make check of filt_by_threshold() which return the -1 as a message of filter")
-    }
-    {
-        my @set1 = (6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
-        my @set2 = (1, 2, 3, 4, 5, 11, 12, 13, 14, 15);
-        my $threshold = 0.33;
-        my $score = $jacc->filt_by_threshold(\@set1, \@set2, $threshold);
+        my $score = $jacc->filt_by_threshold(\%set1, \%set2, $threshold);
         is ($score, 0.333333333333333, "Make check of filt_by_threshold() which return the 0.33 as a value of score")
     }
     {
-        my @set1 = (6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
-        my @set2 = (1, 2, 3, 4, 5, 11, 12, 13, 14, 15);
+        my %set1 = (1 => 1, 2 => 1, 3 => 1, 4 => 1, 5 => 1, 6 => 1, 7 => 1, 8 => 1, 9 => 1, 10 => 1);
+        my %set2 = (1 => 1, 2 => 1, 3 => 1, 4 => 1, 5 => 1, 11 => 1, 12 => 1, 13 => 1, 14 => 1, 15 => 1);
         my $threshold = 0.34;
-        my $score = $jacc->filt_by_threshold(\@set1, \@set2, $threshold);
+        my $score = $jacc->filt_by_threshold(\%set1, \%set2, $threshold);
         is ($score, -1, "Make check of filt_by_threshold() which return the -1 as a message of filter")
     }
-
+    {
+        my %set1 = (6 => 1, 7 => 1, 8 => 1, 9 => 1, 10 => 1, 11 => 1, 12 => 1, 13 => 1, 14 => 1, 15 => 1);
+        my %set2 = (1 => 1, 2 => 1, 3 => 1, 4 => 1, 5 => 1, 11 => 1, 12 => 1, 13 => 1, 14 => 1, 15 => 1);
+        my $threshold = 0.33;
+        my $score = $jacc->filt_by_threshold(\%set1, \%set2, $threshold);
+        is ($score, 0.333333333333333, "Make check of filt_by_threshold() which return the 0.33 as a value of score")
+    }
+    {
+        my %set1 = (6 => 1, 7 => 1, 8 => 1, 9 => 1, 10 => 1, 11 => 1, 12 => 1, 13 => 1, 14 => 1, 15 => 1);
+        my %set2 = (1 => 1, 2 => 1, 3 => 1, 4 => 1, 5 => 1, 11 => 1, 12 => 1, 13 => 1, 14 => 1, 15 => 1);
+        my $threshold = 0.34;
+        my $score = $jacc->filt_by_threshold(\%set1, \%set2, $threshold);
+        is ($score, -1, "Make check of filt_by_threshold() which return the -1 as a message of filter")
+    }
 };
 
-=cut
 
 done_testing;
