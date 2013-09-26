@@ -284,11 +284,11 @@ subtest "Test of estimate_data_type() with the null sets" => sub {
 };
 
 subtest "Test of make_pair_from_hash()" => sub {
-    my $jacc =  Algorithm::SetSimilarity::WeightedJaccard->new();
+    my $datum =  Algorithm::SetSimilarity::Join::Datum->new();
     {
         my %set = ("this" => 1, "is" => 1);
         my $res = [["is", 1], ["this", 1],];
-        my $pair = $jacc->make_pair_from_hash(\%set);
+        my $pair = $datum->make_pair_from_hash(\%set);
         is_deeply ($pair, $res, "Make check of a process to make a pair from a hash");
     }
 };
@@ -300,23 +300,12 @@ subtest "Test of push()" => sub {
         my $is_pushed = $datum->push(\%set);
         is($is_pushed, 1, "push one set");
     };
-
-=pod
     subtest "with a null set" => sub {
         my %set = ();
         my $is_pushed = $datum->push(\%set);
         is($is_pushed, 0, "push a null set");
     };
-    subtest "with a reference to one set" => sub {
-        my %set = (["This", "is", "a", "set"]);
-        my $is_pushed = $datum->push(\%set);
-        is($is_pushed, 0, "push a reference to one set");
-    };
-=cut
-
 };
-
-=pod
 
 subtest "Test of get_num()" => sub {
     my $datum =  Algorithm::SetSimilarity::Join::Datum->new();
@@ -324,12 +313,12 @@ subtest "Test of get_num()" => sub {
         is($datum->get_num(), 0, "heve not pushed yet");
     };
     subtest "with a object which have one set" => sub {
-        my %set = ("This", "is", "a", "set");
+        my %set = ("This" => 1, "is" => 1, "a" => 1, "set" => 1);
         my $is_pushed = $datum->push(\%set);
         is($datum->get_num(), 1, "heve one set");
     };
     subtest "with a object which have two sets" => sub {
-        my %set = ("This", "is", "a", "set");
+        my %set = ("This" => 1, "is" => 1, "a" => 1, "set" => 1);
         my $is_pushed = $datum->push(\%set);
         is($datum->get_num(), 2, "heve two sets");
     }
@@ -338,39 +327,41 @@ subtest "Test of get_num()" => sub {
 subtest "Test of push_multi()" => sub {
     my $datum =  Algorithm::SetSimilarity::Join::Datum->new();
     subtest "with two sets" => sub {
-        my %set = (
-            ["This", "is", "a", "set1"],
-            ["This", "is", "a", "set2"],
+        my @set = (
+            {"This" => 1, "is" => 1, "a" => 1, "set1" => 1},
+            {"This" => 1, "is" => 1, "a" => 1, "set2" => 1},
         );
-        my $is_pushed = $datum->push_multi(\%set);
-        is($is_pushed, 2, "push one set");
+        my $is_pushed = $datum->push_multi(\@set);
+        is($is_pushed, 2, "push two sets");
     };
-        subtest "with two sets" => sub {
-        my %set = (
-            ["This", "is", "a", "set1"],
-            ["This", "is", "a", "set2"],
-            ["This", "is", "a", "set3"],
-            ["This", "is", "a", "set4"],
-            ["This", "is", "a", "set5"],
-            ["This", "is", "a", "set6"],
-            ["This", "is", "a", "set7"],
-            ["This", "is", "a", "set8"],
-            ["This", "is", "a", "set9"],
-            ["This", "is", "a", "set10"],
+
+    subtest "with ten sets" => sub {
+        my @set = (
+            {"This" => 1, "is" => 1, "a" => 1, "set1" => 1},
+            {"This" => 1, "is" => 1, "a" => 1, "set2" => 1},
+            {"This" => 1, "is" => 1, "a" => 1, "set3" => 1},
+            {"This" => 1, "is" => 1, "a" => 1, "set4" => 1},
+            {"This" => 1, "is" => 1, "a" => 1, "set5" => 1},
+            {"This" => 1, "is" => 1, "a" => 1, "set6" => 1},
+            {"This" => 1, "is" => 1, "a" => 1, "set7" => 1},
+            {"This" => 1, "is" => 1, "a" => 1, "set8" => 1},
+            {"This" => 1, "is" => 1, "a" => 1, "set9" => 1},
+            {"This" => 1, "is" => 1, "a" => 1, "set10" => 1},
         );
-        my $is_pushed = $datum->push_multi(\%set);
-        is($is_pushed, 10, "push one set");
+        my $is_pushed = $datum->push_multi(\@set);
+        is($is_pushed, 10, "push ten sets");
     };
+
 };
 
 subtest "Test of get()" => sub {
     my $datum =  Algorithm::SetSimilarity::Join::Datum->new();
     subtest "with one set" => sub {
-        my %set = ("This", "is", "a", "set");
+        my %set = ("This" => 1, "is" => 1, "a" => 1, "set" => 1,);
         my $is_pushed = $datum->push(\%set);
         my $get_result = $datum->get(0);
-        my @res = ("This", "a", "is", "set");
-        is_deeply($get_result, \@res, "get the pushed set and compare with original set");
+        my $res = [["This" => 1,], ["a" => 1,], ["is" => 1,], ["set" => 1,],];
+        is_deeply($get_result, $res, "get the pushed set and compare with original set");
     };
 };
 
@@ -379,93 +370,86 @@ subtest "Test of update()" => sub {
     my $id = 0;
 
     subtest "with a initial set" => sub {
-        my %set1 = ("This", "is", "a", "set1");
+        my %set1 = ("This" => 1, "is" => 1, "a" => 1, "set1" => 1);
         my $is_pushed = $datum->push(\%set1);
         my $get_result1 = $datum->get($id);
-        my @res1 = ("This", "a", "is", "set1");
-        is_deeply($get_result1, \@res1, "get the pushed set and compare with original set1");
+        my $res1 = [["This" => 1,], ["a" => 1,], ["is" => 1,], ["set1" => 1,],];
+        is_deeply($get_result1, $res1, "get the pushed set and compare with original set1");
     };
-
     subtest "with a unpushable set" => sub {
         my %set_null = ();
         my $is_updated = $datum->update($id, \%set_null);
         is($is_updated, 0, "cannot update using a null set");
     };
-
     subtest "with two different set" => sub {
-
-        my %set2 = ("This", "is", "a", "set2");
+        my %set2 = ("This" => 1, "is" => 1, "a" => 1, "set2" => 1);
         my $is_updated = $datum->update($id, \%set2);
         is($is_updated, 1, "update a row using new set");
-        my @res2 = ("This", "a", "is", "set2");
+        my $res2 = [["This" => 1,], ["a" => 1,], ["is" => 1,], ["set2" => 1,],];
         my $get_result2 = $datum->get($id);
-        is_deeply($get_result2, \@res2, "update the pushed set and compare with original set2");
+        is_deeply($get_result2, $res2, "update the pushed set and compare with original set2");
     };
 };
 
 subtest "Test of update_multi()" => sub {
     my $datum =  Algorithm::SetSimilarity::Join::Datum->new();
     subtest "with two different sets" => sub {
-        my %sets1 = (
-            ["This", "is", "a", "set1"],
-            ["This", "is", "a", "set2"],
-            ["This", "is", "a", "set3"],
+        my @sets1 = (
+            {"This" => 1, "is" => 1, "a" => 1, "set1" => 1},
+            {"This" => 1, "is" => 1, "a" => 1, "set2" => 1},
+            {"This" => 1, "is" => 1, "a" => 1, "set3" => 1},
         );
-        my $is_pushed = $datum->push_multi(\%sets1);
+        my $is_pushed = $datum->push_multi(\@sets1);
         is($is_pushed, 3, "push a set of three sets");
 
         my $id = 1;
 
-        my %set = ("This", "is", "a", "set4");
+        my %set = ("This" => 1, "is" => 1, "a" => 1, "set4" => 1);
         my $is_update_row = $datum->update($id, \%set);
         is($is_update_row, 1, "update a row using a set");
-        my @res = ("This", "a", "is", "set4");
+        my $res = [["This" => 1], ["a" => 1], ["is" => 1], ["set4" => 1]];
         my $get_result_row = $datum->get($id);
-        is_deeply($get_result_row, \@res, "update the pushed sets and compare with new set");
-
+        is_deeply($get_result_row, $res, "update the pushed sets and compare with new set");
 
         my %sets2 = (
-            2 => ["This", "is", "a", "set1"],
-            1 => ["This", "is", "a", "set2"],
-            0 => ["This", "is", "a", "set3"],
+            2 => {"This" => 1, "is" => 1, "a" => 1, "set1" => 1},
+            1 => {"This" => 1, "is" => 1, "a" => 1, "set2" => 1},
+            0 => {"This" => 1, "is" => 1, "a" => 1, "set3" => 1},
         );
         my $is_updated = $datum->update_multi(\%sets2);
         is($is_updated, 3, "update a set of three sets");
 
-        my @res2 = ("This", "a", "is", "set2");
+        my $res2 = [["This" => 1], ["a" => 1], ["is" => 1], ["set2" => 1]];
         my $get_result = $datum->get($id);
-        is_deeply($get_result, \@res2, "update the pushed sets and compare with original set");
+        is_deeply($get_result, $res2, "update the pushed sets and compare with original set");
     };
 };
 
 subtest "Test of sort()" => sub {
     my $datum =  Algorithm::SetSimilarity::Join::Datum->new();
     subtest "with two sets" => sub {
-        my %set1 = (
-            ["This",],
-            ["This", "is",],
-            ["This", "is", "a",],
-            ["This", "is", "a", "set",],
+        my @set1 = (
+            {"This" => 1,},
+            {"This" => 1, "is" => 1,},
+            {"This" => 1, "is" => 1, "a" => 1,},
+            {"This" => 1, "is" => 1, "a" => 1, "set" => 1,},
         );
 
-        my %set2 = (
-            ["This", "a", "is", "set",],
-            ["This", "a", "is",],
-            ["This", "is",],
-            ["This",],
+        my @set2 = (
+            [["This", 1], ["a", 1], ["is", 1], ["set", 1],],
+            [["This", 1], ["a", 1], ["is", 1],],
+            [["This", 1], ["is", 1],],
+            [["This", 1],],
         );
 
-        my $is_pushed = $datum->push_multi(\%set1);
+        my $is_pushed = $datum->push_multi(\@set1);
         is($is_pushed, 4, "push four sets");
 
         my $is_sorted = $datum->sort();
         is($is_sorted, 1, "execute the sorting process");
 
-        is_deeply(\@{$datum->{datum}}, \%set2, "sort the sets by the elements number of the each sets");
+        is_deeply(\@{$datum->{datum}}, \@set2, "sort the sets by the elements number of the each sets");
     };
 };
-
-=cut
-
 
 done_testing;
