@@ -16,15 +16,6 @@ sub new {
     bless \%hash, $class;
 }
 
-sub get_sets {
-    my ($self, $sets, $threshold) = @_;
-    unless ( $self->{is_sorted} ) {
-        @{$sets} = sort {$#{$sets->[$b]} <=> $#{$sets->[$a]}} @$sets;
-    }
-    my @result_sets = Algorithm::SetSimilarity::Join::MPJoin->join($sets, $threshold);
-    return \@result_sets;
-}
-
 sub estimate_data_type {
     my ($self, $set1, $set2) = @_;
     my $is_estimate = 0;
