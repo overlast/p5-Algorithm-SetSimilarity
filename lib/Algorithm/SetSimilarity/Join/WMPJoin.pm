@@ -68,8 +68,8 @@ sub join {
                 # my $max_att = $maxpref; # adopt maxpref size
                 # $max_att = $s2 if ($s2 < $max_att);
 
-                my $min_overlap = int(($threshold / (1 + $threshold)) * ($s1 + $s2));
-                my $alpha = $s2 - ($min_overlap + 1) + 1;
+                my $min_overlap = int(($threshold / (1 + $threshold)) * ($cum_weight[$p] + $cum_weight[$c]));
+                my $alpha = $cum_weight[$c] - ($min_overlap + 1) + 1;
                 my $match_num = 0;
                 my ($att1, $att2) = (0, 0);
                 my ($w1, $w2) = ($p_set->[$att1]->[1], $c_set->[$att2]->[1]);

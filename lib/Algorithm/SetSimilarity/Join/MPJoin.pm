@@ -43,11 +43,11 @@ sub join {
                 # $max_att = $s2 if ($s2 < $max_att);
 
                 my $min_overlap = int(($threshold / (1 + $threshold)) * ($s1 + $s2));
-                my $alpha = $s2 - $min_overlap + 1;
+                my $alpha = $s2 - ($min_overlap + 1) + 1;
                 my $match_num = 0;
                 my ($att1, $att2) = (0, 0);
 
-                while (($att2 <= $alpha) && ($att1 < $s1)) {
+                while (($att2 < $alpha) && ($att1 < $s1)) {
                     my $judge = -1;
                     if ($datum->{data_type} eq "number") {
                         $judge = ($p_set->[$att1] <=> $c_set->[$att2]);
