@@ -76,8 +76,6 @@ subtest "Test of estimate_data_type() with the null sets" => sub {
     }
 };
 
-
-
 subtest "Test of _swap_set_ascending_order()" => sub {
     my $jacc =  Algorithm::SetSimilarity::WeightedJaccard->new();
     {
@@ -299,6 +297,5 @@ subtest "Test of filt_by_threshold() using the number elements" => sub {
         is ($score, -1, "Make check of filt_by_threshold() which return the -1 as a message of filter")
     }
 };
-
 
 done_testing;
