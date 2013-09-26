@@ -36,6 +36,16 @@ subtest "Test of get_similarity() with the null sets" => sub {
     }
 };
 
+subtest "Test of make_pair_from_hash()" => sub {
+    my $jacc =  Algorithm::SetSimilarity::WeightedJaccard->new();
+    {
+        my %set = ("this" => 1, "is" => 1);
+        my $res = [["is", 1], ["this", 1],];
+        my $pair = $jacc->make_pair_from_hash(\%set);
+        is_deeply ($pair, $res, "Make check of a process to make a pair from a hash");
+    }
+};
+
 subtest "Test of estimate_data_type() with the null sets" => sub {
     my $jacc =  Algorithm::SetSimilarity::WeightedJaccard->new();
     {
@@ -65,6 +75,8 @@ subtest "Test of estimate_data_type() with the null sets" => sub {
         is ($is_estimate, 0, "Make check of estimating the data type of two sets");
     }
 };
+
+
 
 subtest "Test of _swap_set_ascending_order()" => sub {
     my $jacc =  Algorithm::SetSimilarity::WeightedJaccard->new();
