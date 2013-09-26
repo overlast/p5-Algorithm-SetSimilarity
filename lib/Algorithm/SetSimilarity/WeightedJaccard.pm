@@ -115,19 +115,6 @@ sub get_similarity {
     return $score;
 }
 
-=pod
-
-sub get_sets {
-    my ($self, $sets, $threshold) = @_;
-    unless ( $self->{is_sorted} ) {
-        @{$sets} = sort {$#{$sets->[$b]} <=> $#{$sets->[$a]}} @$sets;
-    }
-    my @result_sets = Algorithm::SetSimilarity::Join::MPJoin->join($sets, $threshold);
-    return \@result_sets;
-}
-
-=cut
-
 sub get_cumulative_weight {
     my ($self, $set) = @_;
     my $cum_weight = 0;
@@ -151,8 +138,6 @@ sub make_pair_from_hash {
     }
     return \@pair;
 }
-
-use YAML;
 
 sub filt_by_threshold {
     my ($self, $set1, $set2, $threshold) = @_;
