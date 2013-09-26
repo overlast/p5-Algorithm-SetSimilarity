@@ -95,14 +95,13 @@ sub get_similarity {
     my $score = -1.0;
     if ((ref $set1 eq "HASH") && (ref $set2 eq "HASH") && (%$set1) && (%$set2)) {
         if ((defined $threshold) && ($threshold > 0.0)) {
-            #$score = $self->filt_by_threshold($set1, $set2, $threshold);
+            $score = $self->filt_by_threshold($set1, $set2, $threshold);
         } else{
             ($set1, $set2) = $self->_swap_set_descending_order($set1, $set2);
             my $s1 = scalar(keys(%$set1));
             my $s2 = scalar(keys(%$set2));
             my $is_estimate = $self->estimate_data_type($set1, $set2) unless (exists $self->{data_type});
             if (($is_estimate) || (exists $self->{data_type})) {
-
                 my $s_norm1 = $self->get_squared_norm($set1);
                 my $s_norm2 = $self->get_squared_norm($set2);
                 my $cum_score = 0;
@@ -127,162 +126,146 @@ sub get_sets {
     return \@result_sets;
 }
 
+=cut
 
-sub get_similarity {
-    my ($self, $set1, $set2, $threshold) = @_;
-    my $score = -1.0;
-    if ((ref $set1 eq "ARRAY") && (ref $set2 eq "ARRAY") && (@$set1) && (@$set2)) {
-        if ((defined $threshold) && ($threshold > 0.0)) {
-            $score = $self->filt_by_threshold($set1, $set2, $threshold);
-        } else{
-            ($set1, $set2) = $self->_swap_set_descending_order($set1, $set2);
-            my $s1 = $#$set1 + 1;
-            my $s2 = $#$set2 + 1;
-            my $is_estimate = $self->estimate_data_type($set1, $set2) unless (exists $self->{data_type});
-            if (($is_estimate) || (exists $self->{data_type})) {
-                unless ( $self->{is_sorted} ) {
-                    if ($self->{data_type} eq "number") {
-                        @{$set1} = sort {$a <=> $b} @$set1;
-                        @{$set2} = sort {$a <=> $b} @$set2;
-                    } else {
-                        @{$set1} = sort {$a cmp $b} @$set1;
-                        @{$set2} = sort {$a cmp $b} @$set2;
-                    }
-                }
-                my $match_num = 0;
-                for (my ($att1, $att2) = (0, 0); ($att1 < $s2) && ($att2 < $s2);) {
-                    my $judge = -1;
-                    if ($self->{data_type} eq "number") {
-                        $judge = ($set1->[$att1] <=> $set2->[$att2]);
-                    } else {
-                        $judge = ($set1->[$att1] cmp $set2->[$att2]);
-                    }
-
-                    if ($judge == -1) {
-                        $att1++;
-                    } elsif ($judge == 1) {
-                        $att2++;
-                    } else {
-                        $match_num++;
-                        $att1++;
-                        $att2++;
-                    }
-                }
-                my $diff_num = ($s1 - $match_num) + ($s2 - $match_num);
-                $score = $match_num / ($match_num + $diff_num);
-            }
-        }
+sub get_cumulative_weight {
+    my ($self, $set) = @_;
+    my $cum_weight = 0;
+    foreach my $val (values %$set) {
+        $cum_weight += $val;
     }
-    return $score;
+    return $cum_weight;
 }
 
-sub _swap_set_ascending_order {
-    my ($self, $set1, $set2) = @_;
-    if ($#$set1 > $#$set2) {
-        my $tmp_ref = $set1;
-        $set1 = $set2;
-        $set2 = $tmp_ref;
+sub make_pair_from_hash {
+    my ($self, $set) = @_;
+    my @pair = ();
+    foreach my $key (keys %$set) {
+        my $entry = [$key, $set->{$key}];
+        push @pair, $entry;
     }
-    return wantarray ? ($set1, $set2) : [$set1, $set2];
+    if ($self->{data_type} eq "number") {
+        @pair = sort { $a->[0] <=> $b->[0] } @pair;
+    } else {
+        @pair = sort { $a->[0] cmp $b->[0] } @pair;
+    }
+    return \@pair;
 }
-
- sub _swap_set_descending_order {
-     my ($self, $set1, $set2) = @_;
-     if ($#$set1 < $#$set2) {
-         my $tmp_ref = $set1;
-         $set1 = $set2;
-         $set2 = $tmp_ref;
-     }
-     return wantarray ? ($set1, $set2) : [$set1, $set2];
- }
 
 sub filt_by_threshold {
     my ($self, $set1, $set2, $threshold) = @_;
     my $score = -1.0;
-    if ((ref $set1 eq "ARRAY") && (ref $set2 eq "ARRAY") &&
-            (@$set1) && (@$set2) &&
+    if ((ref $set1 eq "HASH") && (ref $set2 eq "HASH") &&
+            (%$set1) && (%$set2) &&
                 ($threshold > 0.0) && ($threshold <= 1.0)) {
 
         for(my $r = 0; $r <= 0; $r++) {
             ($set1, $set2) = $self->_swap_set_descending_order($set1, $set2);
-            my $s1 = $#$set1 + 1;
-            my $s2 = $#$set2 + 1;
+            my $s1 = scalar(keys(%$set1));
+            my $s2 = scalar(keys(%$set2));
+            my $cum_w1 = $self->get_cumulative_weight($set1);
+            my $cum_w2 = $self->get_cumulative_weight($set2);
 
-            last unless (($s1 * $threshold) <= $s2); #size filtering
+            last unless (($s1 * $threshold) <= $cum_w2); #size filtering
 
             my $is_estimate = $self->estimate_data_type($set1, $set2) unless (exists $self->{data_type});
             if (($is_estimate) || (exists $self->{data_type})) {
-                unless ( $self->{is_sorted} ) {
-                    if ($self->{data_type} eq "number") {
-                        @{$set1} = sort { $a <=> $b } @$set1;
-                        @{$set2} = sort { $a <=> $b } @$set2;
-                    } else {
-                        @{$set1} = sort { $a cmp $b} @$set1;
-                        @{$set2} = sort { $a cmp $b} @$set2;
-                    }
-                }
+                my $s_norm1 = $self->get_squared_norm($set1);
+                my $s_norm2 = $self->get_squared_norm($set2);
+                my $datum1 = $self->make_pair_from_hash($set1);
+                my $datum2 = $self->make_pair_from_hash($set2);
+
+                my $cum_score = 0;
 
                 my $min_overlap = int(($threshold / (1 + $threshold)) * ($s1 + $s2));
                 my $alpha = $s2 - ($min_overlap + 1) + 1;
                 my $match_num = 0;
                 my ($att1, $att2) = (0, 0);
+                my ($w1, $w2) = ($datum1->[$att1]->[1], $datum2->[$att2]->[1]);
+                my ($c1, $c2) = ($w1, $w2);
 
-                while (($att2 < $alpha) && ($att1 < $s1)) {
+                while (($c2 < $w2 + $alpha) && ($att1 < $s1) && ($att2 < $s2)) {
                     my $judge = -1;
                     if ($self->{data_type} eq "number") {
-                        $judge = ($set1->[$att1] <=> $set2->[$att2]);
+                        $judge = ($datum1->[$att1]->[0] <=> $datum2->[$att2]->[0]);
                     } else {
-                        $judge = ($set1->[$att1] cmp $set2->[$att2]);
+                        $judge = ($datum1->[$att1]->[0] cmp $datum2->[$att2]->[0]);
                     }
 
                     if ($judge == -1) {
                         $att1++;
+                        if ($att1 < $s1) {
+                            $w1 = $datum1->[$att1]->[1];
+                            $c1 += $w1;
+                        }
                     } elsif ($judge == 1) {
                         $att2++;
+                        if ($att2 < $s2) {
+                            $w2 = $datum2->[$att2]->[1];
+                        $c2 += $w2;
+                        }
                     } else {
-                        $match_num++;
+                        $match_num += $w1 * $w2;
                         $att1++;
                         $att2++;
+                        if (($att1 < $s1) && ($att2 < $s2)) {
+                            ($w1, $w2) = ($datum1->[$att1]->[1], $datum2->[$att2]->[1]);
+                        $c1 += $w1;
+                            $c2 += $w2;
+                        }
                     }
                 }
-                my $min = ($s2 - $att2);
-                $min = ($s1 - $att1) if ($min > ($s1 - $att1));
+
+                my $min = ($cum_w2 - $c2);
+                $min = ($cum_w1 - $c1) if ($min > ($cum_w1 - $c1));
                 if (($match_num) + $min < $min_overlap) {
                     $match_num = 0;
                     last;
                 }
 
                 last unless ($match_num >= 1);
+
                 while (($att1 < $s1) && ($att2 < $s2)) {
                     my $judge = -1;
                     if ($self->{data_type} eq "number") {
-                        $judge = ($set1->[$att1] <=> $set2->[$att2]);
+                        $judge = ($datum1->[$att1]->[0] <=> $datum2->[$att2]->[0]);
                     } else {
-                        $judge = ($set1->[$att1] cmp $set2->[$att2]);
+                        $judge = ($datum1->[$att1]->[0] cmp $datum2->[$att2]->[0]);
                     }
 
                     if ($judge == -1) {
-                        last if ($match_num + ($s1 - $att1) < $min_overlap);
+                        last if ($match_num + ($cum_w1 - $c1) < $min_overlap);
                         $att1++;
+                        if ($att1 < $s1) {
+                            $w1 = $datum1->[$att1]->[1];
+                            $c1 += $w1;
+                        }
                     } elsif ($judge == 1) {
-                        last if ($match_num + ($s2 - $att2) < $min_overlap);
+                        last if ($match_num + ($cum_w2 - $c2) < $min_overlap);
                         $att2++;
+                        if ($att2 < $s2) {
+                            $w2 = $datum2->[$att2]->[1];
+                            $c2 += $w2;
+                        }
                     } else {
-                        $match_num++;
+                        $match_num += $w1 * $w2;
                         $att1++;
                         $att2++;
+                        if (($att1 < $s1) && ($att2 < $s2)) {
+                            ($w1, $w2) = ($datum1->[$att1]->[1], $datum2->[$att2]->[1]);
+                            $c1 += $w1;
+                            $c2 += $w2;
+                        }
                     }
                 }
                 last unless ($match_num >= $min_overlap + 1);
-                my $diff_num = ($s1 - $match_num) + ($s2 - $match_num);
-                $score = $match_num / ($match_num + $diff_num);
+
+                $score = $match_num / ($s_norm1 + $s_norm2 - $match_num );
             }
         }
     }
     return $score;
 }
-
-=cut
 
 1;
 
